@@ -1220,6 +1220,16 @@ body.hasbeta .shell .nav{top:34px}
 .nearme{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:#1E6B3A}.nearme svg{width:11px;height:11px}
 .locintro{display:flex;gap:10px;align-items:flex-start}.locintro svg{width:28px;height:28px;flex:0 0 28px;color:#FF6A00}
 .aimulti ol{margin:6px 0 0 18px}.aimulti li{margin-bottom:6px}.aimulti li span{display:block;font-size:12.5px;color:var(--ink-2)}.aimulti em{font-style:normal;color:#FF6A00;font-size:11.5px}
+/* cases rouges obligatoires */
+.setupcard{margin:12px 0;border:2px solid #D93025;border-radius:14px;background:#FFF5F4;padding:12px}
+.setupcard__h{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px}.setupcard__h svg{width:22px;height:22px;flex:0 0 22px;color:#D93025}
+.setupcard__h strong{display:block;color:#B3261E}.setupcard__h span{font-size:12.5px;color:#5F2120}
+.setupitem{display:flex;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #F5C2BD}
+.setupitem i{width:16px;height:16px;border-radius:4px;border:2px solid #D93025;background:#fff;flex:0 0 16px}
+.setupitem span{flex:1}.setupitem b{display:block;font-size:13.5px}.setupitem em{font-style:normal;font-size:12px;color:var(--ink-3)}.setupitem svg{width:16px;height:16px}
+.dfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.dfgrid label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600}.dfgrid em{font-style:normal;color:#FF6A00;font-weight:500}
+.dfin{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;padding:0 8px}.dfin input{border:0;min-height:40px;width:100%;outline:none}.dfin b{font-size:11px;color:var(--ink-3)}
 
 .boot{background:#fff !important;align-items:center}
 .splash{display:flex;flex-direction:column;align-items:center;gap:12px;animation:spIn .5s var(--ease) both}
@@ -2271,7 +2281,7 @@ const V={
       vars: p ? variants.map(v=>({id:v.id,size:v.size||'',color:v.color||'',price:fromCents(v.price_cents),lot3:v.lot3_cents?fromCents(v.lot3_cents):'',lot12:v.lot12_cents?fromCents(v.lot12_cents):'',stock:v.stock,measures:v.measures||{},open:false}))
               : [{id:null,size:'',color:'',price:'',lot3:'',lot12:'',stock:1,measures:{},open:true}],
       imgs: images.map(i=>({id:i.id,path:i.storage_path,is_primary:i.is_primary,color:i.color||''})), barcode:p?(p.barcode||''):'',
-      video: p?p.video_path:null, pay: p?(p.pay_mode||(p.cod_ok===false?'before':'cod')):null, pnet:'moncash', pnum:'', colorLabel:p?(p.color_label||''):'', group:p?(p.group_id||null):null, ship:p?(p.ship_mode||'shop'):'shop', shipFee:p&&p.ship_fee_cents!=null?fromCents(p.ship_fee_cents):'',
+      video: p?p.video_path:null, pay: p?(p.pay_mode||(p.cod_ok===false?'before':'cod')):null, pnet:'moncash', pnum:'', colorLabel:p?(p.color_label||''):'', group:p?(p.group_id||null):null, ship:p?(p.ship_mode||'shop'):'shop', shipFee:p&&p.ship_fee_cents!=null?fromCents(p.ship_fee_cents):'', sellUnit:p?(p.sell_unit||'piece'):'piece', perPack:p&&p.units_per_pack?p.units_per_pack:'',
       removedVars:[], removedImgs:[]
     };
     let tab='info';
@@ -2304,7 +2314,7 @@ const V={
         d.title=val('#pT'); d.category_id=val('#pS')||d.category_id; d.condition=val('#pE'); d.audience=val('#pA'); if($('#pBar'))d.barcode=val('#pBar').replace(/\D/g,''); if($('#pOcc')){d.occasions=$$('#pOcc input:checked').map(x=>x.value);} if($('#pAge'))d.age_group=val('#pAge'); if($('#pKg'))d.kid_gender=val('#pKg'); if($('#pPlus'))d.plus_size=$('#pPlus').checked;
         d.price=val('#pP'); d.description=val('#pD');
         { const r=document.querySelector('input[name=pmode]:checked'); if(r)d.pay=r.value; if($('#pNet'))d.pnet=$('#pNet').value; if($('#pNum'))d.pnum=$('#pNum').value.replace(/\D/g,''); }
-        { const r=document.querySelector('input[name=shipm]:checked'); if(r)d.ship=r.value; if($('#pShip'))d.shipFee=$('#pShip').value; if($('#pCol'))d.colorLabel=$('#pCol').value.trim(); }
+        { const r=document.querySelector('input[name=shipm]:checked'); if(r)d.ship=r.value; if($('#pShip'))d.shipFee=$('#pShip').value; if($('#pCol'))d.colorLabel=$('#pCol').value.trim(); if($('#pU'))d.sellUnit=$('#pU').value; if($('#pN'))d.perPack=$('#pN').value; }
       } else if(tab==='var'){
         d.has_variants=$('#hv')?$('#hv').checked:d.has_variants;
         d.vars.forEach((v,i)=>{
@@ -2361,7 +2371,7 @@ const V={
         '<div class="field"><label>Prix barré</label><div class="hint" style="margin-top:4px">Automatique : il apparaît si vous baissez votre prix, une seule fois, après 7 jours au prix d\'origine.</div></div></div>'+
         '<div class="field" style="margin-bottom:0"><label for="pD">Description</label>'+
         '<textarea id="pD" placeholder="Matière, coupe, défauts éventuels…">'+esc(d.description)+'</textarea>'+
-        '<div class="hint">Signalez les défauts. Un acheteur prévenu ne réclame pas.</div></div>'+colorLabelHTML(d)+payModeHTML(d)+shipHTML(d);
+        '<div class="hint">Signalez les défauts. Un acheteur prévenu ne réclame pas.</div></div>'+sellUnitHTML(d)+colorLabelHTML(d)+payModeHTML(d)+shipHTML(d);
       },
       var:()=>{
         const f=prof().fields;
@@ -2494,6 +2504,7 @@ const V={
       if(status==='published'&&!d.imgs.length)return toast('Ajoutez au moins une photo avant de publier.');
       if(status==='published'&&!d.pay){ tab='info'; $$('.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.t==='info'))); paint(); const pm=$('#pModeF'); if(pm){pm.classList.add('bad'); pm.scrollIntoView({block:'center'});} return toast('Choisissez comment vous voulez être payé.'); }
       if(d.pay==='before'&&!/^\d{8}$/.test(d.pnum||'')){ tab='info'; $$('.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.t==='info'))); paint(); req('#pNum',v=>/^\d{8}$/.test(v)); return toast('Indiquez votre numéro MonCash ou NatCash (8 chiffres).'); }
+      if(d.sellUnit&&d.sellUnit!=='piece'&&!(Number(d.perPack)>=2)){ tab='info'; $$('.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.t==='info'))); paint(); req('#pN',v=>Number(v)>=2); return toast('Indiquez combien d\'unités contient une '+d.sellUnit+'.'); }
       if(d.ship==='fee'&&!(Number(d.shipFee)>0)){ tab='info'; $$('.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.t==='info'))); paint(); req('#pShip',v=>Number(v)>0); return toast('Indiquez le montant de la livraison.'); }
       if(d.pay==='before'){ const col=d.pnet==='natcash'?'natcash':'moncash'; const row={shop_id:S.shop.id}; row[col]=true; row[col+'_number']=d.pnum;
         const {error:pe}=await sb.from('shop_payment').upsert(row); if(pe)return fail(pe,'Numéro de paiement'); window.__SP=Object.assign(window.__SP||{},row); }
@@ -2514,7 +2525,7 @@ const V={
           condition:d.condition, barcode:d.barcode||null, audience:d.audience||null, occasions:d.occasions||[], age_group:d.age_group||null, kid_gender:d.kid_gender||null, plus_size:!!d.plus_size, status:status, has_variants:d.has_variants,
           base_price_cents:toCents(d.price),
           published_at: status==='published' ? (p&&p.published_at?p.published_at:now()) : null,
-          video_path: d.video||null, pay_mode: d.pay||null, cod_ok: d.pay?d.pay==='cod':true, color_label: d.colorLabel||null, ship_mode: d.ship==='shop'?null:d.ship, ship_fee_cents: d.ship==='fee'?toCents(d.shipFee):null
+          video_path: d.video||null, pay_mode: d.pay||null, cod_ok: d.pay?d.pay==='cod':true, color_label: d.colorLabel||null, ship_mode: d.ship==='shop'?null:d.ship, ship_fee_cents: d.ship==='fee'?toCents(d.shipFee):null, sell_unit: d.sellUnit||'piece', units_per_pack: d.sellUnit&&d.sellUnit!=='piece'&&Number(d.perPack)>=2?Math.round(Number(d.perPack)):null
         };
         let pid=id;
         if(id){
@@ -3105,7 +3116,7 @@ Object.assign(V,{
           '<button class="btn btn--sm" id="addAdr" style="margin-top:10px">'+ico('plus',2)+'Nouvelle adresse</button><div id="adrForm"></div></div></div>':'')+
         ids.map(id=>{const g=groups[id], s=st[id];
           const sub=g.items.reduce((t,v)=>t+lineTotal(v,qty(v)),0);
-          const ship=s.pickup?0:shipFor(g.items,s.d); grand+=sub+ship;
+          const ship=s.pickup?0:shipFor(g.items,s.d,((adds||[]).find(a=>a.id===addr)||{}).department); grand+=sub+ship;
           const num=s.pay==='moncash'?s.p.moncash_number:s.pay==='natcash'?s.p.natcash_number:'';
           return '<div class="card enter" style="margin-top:14px"><div class="card__h"><h3>'+esc(g.shop.name)+'</h3><span class="t-small" style="margin-left:auto">'+esc(g.shop.city||'')+'</span></div><div class="card__b">'+
           g.items.map(v=>{const im=(v.products.product_images||[]).sort((a,b)=>(b.is_primary-a.is_primary)||(a.position-b.position))[0];
@@ -5563,7 +5574,7 @@ V.product=async function(id){
   const pid=String(id||'').split('?')[0];
   const {data:pr}=await sb.from('products').select('shop_id,cod_ok,group_id,color_label,ship_mode,ship_fee_cents').eq('id',pid).maybeSingle(); if(!pr)return;
   const [{data:sh},{data:dl},{data:sib}]=await Promise.all([sb.from('shops').select('city,return_policy').eq('id',pr.shop_id).maybeSingle(),
-    sb.from('shop_delivery').select('express_city,terminal_ok,mode,fee_cents,allows_pickup').eq('shop_id',pr.shop_id).maybeSingle(),
+    sb.from('shop_delivery').select('express_city,terminal_ok,mode,fee_cents,allows_pickup,dept_fees,fees_may_vary').eq('shop_id',pr.shop_id).maybeSingle(),
     pr.group_id?sb.from('products').select('id,color_label,status,product_images(storage_path,is_primary,position)').eq('group_id',pr.group_id).eq('status','published'):Promise.resolve({data:[]})]);
   const chips=[];
   const cod=pr.cod_ok!==false;
@@ -5571,8 +5582,10 @@ V.product=async function(id){
   if(dl&&dl.express_city)chips.push('<span class="dchip dhot">'+ico('bolt',2)+'Livré en moins d\'1 h à '+esc((sh||{}).city||'')+'</span>');
   if(dl&&dl.terminal_ok)chips.push('<span class="dchip">'+ico('bus',2)+'Envoi en province par bus</span>');
   if(sh)chips.push('<span class="dchip">'+ico('ret',2)+RET[sh.return_policy||'none']+'</span>');
-  { const fee=pr.ship_mode==='included'?0:pr.ship_mode==='fee'?(pr.ship_fee_cents||0):(dl&&(dl.mode==='separate'||dl.mode==='zones')?(dl.fee_cents||0):0);
-    if(!(dl&&dl.mode==='pickup'))chips.push('<span class="dchip">'+ico('truck',2)+(fee?'Livraison '+gds(fee):'Livraison incluse')+'</span>');
+  { const myDep=(typeof LOC!=='undefined'&&LOC&&LOC.dep)||((S.profile||{}).department)||null;
+    const dfee=dl&&dl.dept_fees&&myDep&&dl.dept_fees[myDep]!=null?Number(dl.dept_fees[myDep]):null;
+    const fee=pr.ship_mode==='included'?0:pr.ship_mode==='fee'?(pr.ship_fee_cents||0):(dfee!=null?dfee:(dl&&(dl.mode==='separate'||dl.mode==='zones')?(dl.fee_cents||0):0));
+    if(!(dl&&dl.mode==='pickup'))chips.push('<span class="dchip">'+ico('truck',2)+(fee?'Livraison '+gds(fee)+(dfee!=null&&pr.ship_mode!=='fee'?' vers '+esc(myDep):''):'Livraison incluse')+(dl&&dl.fees_may_vary&&fee?' · peut varier':'')+' · frais du vendeur</span>');
     if(!dl||dl.allows_pickup!==false||dl.mode==='pickup')chips.push('<span class="dchip">'+ico('pin',2)+'Retrait gratuit chez le vendeur</span>'); }
   const h=$('#view h1'); if(h&&chips.length)h.insertAdjacentHTML('afterend','<div class="dchips">'+chips.join('')+'</div>');
   /* même article dans d'autres couleurs : chaque couleur est une fiche complète */
@@ -5606,7 +5619,7 @@ V.shopPage=async function(slug){
 const _m=V.myShop;
 V.myShop=function(){ _m.call(this); const f=$('#view .card__f'); if(!f)return; const cur=(S.shop||{}).return_policy||'none';
   f.insertAdjacentHTML('beforebegin','<div class="card__b" style="border-top:1px solid var(--line)"><div class="field" style="margin:0"><label for="rpS">Politique de retour (visible par les clients)</label><select id="rpS">'+Object.entries(RET).map(([k,l])=>'<option value="'+k+'"'+(k===cur?' selected':'')+'>'+l+'</option>').join('')+'</select><div class="hint">Une politique claire rassure. Elle s\'affiche sur chaque article et sur votre fiche confiance.</div></div></div>');
-  $('#rpS').onchange=async e=>{ const {error}=await sb.from('shops').update({return_policy:e.target.value}).eq('id',S.shop.id); if(error)return fail(error,'Retour'); await loadSession(); toast('Politique de retour enregistrée.'); }; };
+  $('#rpS').onchange=async e=>{ const {error}=await sb.from('shops').update({return_policy:e.target.value,return_policy_set:true}).eq('id',S.shop.id); if(error)return fail(error,'Retour'); await loadSession(); toast('Politique de retour enregistrée.'); }; };
 const _dl=V.delivery;
 V.delivery=async function(){ await _dl.apply(this,arguments); if(!S.shop)return;
   const {data:d}=await sb.from('shop_delivery').select('express_city,terminal_ok').eq('shop_id',S.shop.id).maybeSingle();
@@ -5685,9 +5698,10 @@ function shipHTML(d){
     '<div class="hint">Le client peut toujours venir chercher l\'article chez vous : il ne paie alors pas la livraison.</div></div>';
 }
 document.addEventListener('change',e=>{ if(e.target&&e.target.name==='shipm'){ document.querySelectorAll('.shipmode .pick').forEach(l=>l.classList.toggle('on',!!l.querySelector('input:checked'))); const f=document.querySelector('.shipfee'); if(f)f.classList.toggle('on',e.target.value==='fee'); } });
-function shipFor(items,d){
+function shipFor(items,d,dep){
   d=d||{}; const def=items.some(v=>!v.products.ship_mode);
-  const base=def&&(d.mode==='separate'||d.mode==='zones'||!d.mode)?(d.fee_cents||0):0;
+  const df=d.dept_fees&&dep&&d.dept_fees[dep]!=null?Number(d.dept_fees[dep]):null;
+  const base=def&&d.mode!=='pickup'?(df!=null?df:(d.fee_cents||0)):0;
   const mx=Math.max(0,...items.filter(v=>v.products.ship_mode==='fee').map(v=>v.products.ship_fee_cents||0));
   return Math.max(base,mx);
 }
@@ -5829,6 +5843,79 @@ function paintLoc(){ $$('.locbtn span').forEach(s=>s.textContent=locLabel()); }
   return r; }; })();
 /* filet de sécurité : quelle que soit la façon dont la session s'ouvre, on demande une fois */
 setInterval(()=>{ try{ if(window.QG||!S.user||localStorage.getItem('valex_loc_asked')||(LOC&&LOC.src==='gps'))return; if(document.querySelector('#modal.on'))return; locPrompt(); }catch(e){} },3000);
+
+
+/* =========================================================
+   PHASE 1k (1/11 soir) — boutique complète obligatoire, livraison par département,
+   position de la boutique, vente par caisse
+   ========================================================= */
+const SETUP={
+  logo:['Logo de la boutique','Une boutique sans image n\'inspire pas confiance.','#/ma-boutique'],
+  photo:['Photo de la boutique','Une vraie photo de votre boutique ou de votre stand (pas un produit).','#/ma-boutique'],
+  description:['Présentation de la boutique','Au moins 30 caractères : ce que vous vendez, depuis quand, où.','#/ma-boutique'],
+  ville:['Ville et département','Pour que les clients proches vous trouvent.','#/ma-boutique'],
+  position:['Position GPS de la boutique','Touchez « Je suis à ma boutique » quand vous y êtes.','#/ma-boutique'],
+  retour:['Politique de retour','Choisissez-la, même « pas de retour » : le client doit savoir.','#/ma-boutique'],
+  livraison:['Frais de livraison pour les 10 départements','Ou « retrait seulement » si vous ne livrez jamais.','#/livraison'],
+  paiement:['Numéro MonCash ou NatCash','Pour recevoir votre argent.','#/paiement'],
+  identite:['Vérification d\'identité','Pièce d\'identité et selfie, examinés par l\'équipe VAlex.','#/verification']
+};
+async function shopMissing(){ if(!S.shop)return []; try{ const {data}=await sb.rpc('shop_missing',{s:S.shop.id}); return Array.isArray(data)?data:[]; }catch(e){ return []; } }
+function setupHTML(miss){
+  if(!miss.length)return '';
+  return '<div class="setupcard enter"><div class="setupcard__h">'+ico('alert',2)+'<div><strong>Obligatoire avant de publier</strong><span>'+miss.length+' case'+(miss.length>1?'s':'')+' rouge'+(miss.length>1?'s':'')+' à remplir. Tant qu\'il en reste, vos produits restent en brouillon.</span></div></div>'+
+    miss.map(k=>{ const s=SETUP[k]||[k,'',"#/ma-boutique"]; return '<a class="setupitem" href="'+s[2]+'"><i></i><span><b>'+esc(s[0])+'</b><em>'+esc(s[1])+'</em></span>'+ico('chev',2)+'</a>'; }).join('')+'</div>';
+}
+/* tableau de bord : les cases rouges en premier */
+(function(){ const _d=V.dash; V.dash=async function(){ const r=await _d.apply(this,arguments); if(!S.shop)return r;
+  const miss=await shopMissing(); const h=$('#view .phead'); if(h&&miss.length&&!$('#view .setupcard')){ h.insertAdjacentHTML('afterend',setupHTML(miss)); const t=h.querySelector('p'); if(t)t.textContent='Il reste '+miss.length+' case'+(miss.length>1?'s':'')+' rouge'+(miss.length>1?'s':'')+' obligatoire'+(miss.length>1?'s':'')+' avant de publier.'; } return r; }; })();
+/* publier : bloqué tant qu'une case rouge reste (le serveur le refuse aussi) */
+window.addEventListener('click',async e=>{
+  const b=e.target.closest&&e.target.closest('#pub'); if(!b||!S.shop||b.dataset.setupok==='1')return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const miss=await shopMissing();
+  if(miss.length){ const go2=await ask({title:'Votre boutique n\'est pas encore complète',body:'<p class="t-small" style="margin-bottom:10px">Pour protéger les clients, VAlex exige ces informations avant toute publication. Votre produit peut rester en brouillon en attendant.</p>'+setupHTML(miss),ok:'Compléter maintenant',cancel:'Plus tard'});
+    if(go2){ const k=miss[0]; go((SETUP[k]||[])[2]||'#/tableau-de-bord'); } return; }
+  b.dataset.setupok='1'; b.click(); setTimeout(()=>{ b.dataset.setupok=''; },1500);
+},true);
+
+/* Livraison : un prix par département (l'acheteur ne voit que le sien) */
+(function(){ const _dl=V.delivery; V.delivery=async function(){ await _dl.apply(this,arguments); if(!S.shop)return;
+  const {data:d}=await sb.from('shop_delivery').select('mode,dept_fees,fees_may_vary').eq('shop_id',S.shop.id).maybeSingle();
+  const f=(d&&d.dept_fees)||{}; const home=S.shop.department;
+  $('#view').insertAdjacentHTML('beforeend','<div class="card enter" id="dfCard" style="margin-top:14px"><div class="card__h"><h3>Frais de livraison par département</h3><span class="badge '+(Object.keys(f).length>=10||(d&&d.mode==='pickup')?'badge--live':'badge--warn')+'">Obligatoire</span></div><div class="card__b">'+
+    '<p class="t-small" style="margin-bottom:10px">Quand vous livrez vous-même, indiquez ce que coûte la livraison vers chaque département. Le client ne voit que le prix de son département, avec la mention « frais fixés par le vendeur ». Si vous ne livrez jamais, choisissez « retrait seulement » plus haut.</p>'+
+    '<div class="dfgrid">'+Object.keys(DEPTS).map(k=>'<label><span>'+esc(k)+(k===home?' <em>(chez vous)</em>':'')+'</span><span class="dfin"><input type="number" min="0" step="25" inputmode="numeric" data-dep="'+esc(k)+'" value="'+(f[k]!=null?Math.round(f[k]/100):'')+'" placeholder="HTG"><b>HTG</b></span></label>').join('')+'</div>'+
+    '<label class="check" style="margin-top:12px"><input type="checkbox" id="dfVary"'+(d&&d.fees_may_vary?' checked':'')+'> <span>Ces frais peuvent varier un peu (le client en est prévenu)</span></label>'+
+    '<button class="btn btn--pri" id="dfSave" style="margin-top:12px">Enregistrer les 10 prix</button></div></div>');
+  $('#dfSave').onclick=async()=>{ const out={}; let miss=0; $$('#dfCard input[data-dep]').forEach(i=>{ if(i.value===''){miss++;return;} out[i.dataset.dep]=Math.round(Number(i.value)*100); });
+    if(miss&&!(d&&d.mode==='pickup'))return toast('Remplissez les 10 départements (mettez 0 si c\'est gratuit).');
+    busy('#dfSave',true,'…'); const {error}=await sb.from('shop_delivery').upsert({shop_id:S.shop.id,dept_fees:out,fees_may_vary:$('#dfVary').checked}); busy('#dfSave',false);
+    if(error)return fail(error,'Livraison'); toast('Prix de livraison enregistrés.'); };
+}; })();
+
+/* Ma boutique : position GPS (obligatoire) */
+(function(){ const _m=V.myShop; V.myShop=function(){ const r=_m.apply(this,arguments); setTimeout(()=>{ if(!S.shop||$('#gpsShop'))return; const f=$('#view .card__f'); if(!f)return;
+  const ok=S.shop.geo_lat!=null;
+  f.insertAdjacentHTML('beforebegin','<div class="card__b" style="border-top:1px solid var(--line)"><div class="field" style="margin:0"><label>Position de ma boutique <span class="req">*</span></label>'+
+    '<button type="button" class="btn btn--sm" id="gpsShop">'+ico('pin',2)+(ok?'Position enregistrée · mettre à jour':'Je suis à ma boutique')+'</button>'+
+    '<div class="hint">Touchez ce bouton quand vous êtes dans votre boutique. Elle sert à montrer vos produits aux clients proches et aux relais VAlex. Elle n\'est jamais affichée au mètre près.</div></div></div>');
+  $('#gpsShop').onclick=()=>{ if(!navigator.geolocation)return toast('Ce téléphone ne donne pas sa position.'); toast('Recherche de la position…');
+    navigator.geolocation.getCurrentPosition(async p=>{ const {error}=await sb.from('shops').update({geo_lat:Math.round(p.coords.latitude*1e5)/1e5,geo_lng:Math.round(p.coords.longitude*1e5)/1e5}).eq('id',S.shop.id);
+      if(error)return fail(error,'Position'); await loadSession(); toast('Position de la boutique enregistrée.'); $('#gpsShop').lastChild.textContent='Position enregistrée · mettre à jour'; },
+      ()=>toast('Position refusée : autorisez la localisation pour VAlex dans votre téléphone.'),{enableHighAccuracy:true,timeout:15000}); }; },0); return r; }; })();
+
+/* Vente par caisse, carton, paquet… */
+const UNITS={piece:'À la pièce',caisse:'Par caisse',carton:'Par carton',paquet:'Par paquet',sac:'Par sac',douzaine:'Par douzaine'};
+function sellUnitHTML(d){
+  return '<div class="row2" style="margin-top:16px"><div class="field"><label for="pU">Vendu</label><select id="pU">'+Object.entries(UNITS).map(([k,l])=>'<option value="'+k+'"'+((d.sellUnit||'piece')===k?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
+    '<div class="field" id="pNw"'+((d.sellUnit||'piece')==='piece'?' hidden':'')+'><label for="pN">Unités dans une '+esc(((d.sellUnit||'caisse')==='douzaine'?'douzaine':(d.sellUnit||'caisse')))+'</label><input type="number" id="pN" min="2" step="1" inputmode="numeric" value="'+esc(d.perPack||'')+'" placeholder="24"><div class="hint">Le prix indiqué plus haut est celui de la '+esc(d.sellUnit&&d.sellUnit!=='piece'?d.sellUnit:'caisse')+' entière.</div></div></div>';
+}
+document.addEventListener('change',e=>{ if(e.target&&e.target.id==='pU'){ const w=$('#pNw'); if(w)w.hidden=e.target.value==='piece'; const n=$('#pN'); if(n&&e.target.value==='douzaine'&&!n.value)n.value=12; } });
+(function(){ const _p=V.product; V.product=async function(id){ await _p.apply(this,arguments);
+  const pid=String(id||'').split('?')[0]; const {data:pr}=await sb.from('products').select('sell_unit,units_per_pack,base_price_cents').eq('id',pid).maybeSingle();
+  if(!pr||!pr.sell_unit||pr.sell_unit==='piece'||!pr.units_per_pack)return; const c=$('#view .dchips'); if(!c)return;
+  c.insertAdjacentHTML('afterbegin','<span class="dchip ok">'+ico('box',2)+UNITS[pr.sell_unit].replace('Par ','')+' de '+pr.units_per_pack+' · '+gds(Math.round((pr.base_price_cents||0)/pr.units_per_pack))+' l\'unité</span>'); }; })();
 
 /* signalement, disponible depuis un produit ou une boutique */
 async function reportDialog(type,id){
