@@ -18,6 +18,9 @@ function inject(res, { title, desc, image, url, jsonld, body, hash }) {
 <script>if(!location.hash)history.replaceState(null,"",location.pathname+"${hash}");</script>`;
   return new HTMLRewriter()
     .on("title", { element(e) { e.remove(); } })
+    .on('meta[property^="og:"]', { element(e) { e.remove(); } })
+    .on('meta[name="description"]', { element(e) { e.remove(); } })
+    .on('meta[name^="twitter:"]', { element(e) { e.remove(); } })
     .on("head", { element(e) { e.append(head, { html: true }); } })
     .on("body", { element(e) { e.prepend(`<noscript><main style="font-family:sans-serif;padding:16px">${body}</main></noscript>`, { html: true }); } })
     .transform(res);

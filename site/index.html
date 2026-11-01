@@ -1213,6 +1213,13 @@ body.hasbeta .shell .nav{top:34px}
 .lvladder{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}.lvladder i{height:6px;border-radius:3px;background:#EEE}.lvladder i.on{background:#FF6A00}
 .lvbar{height:6px;border-radius:3px;background:#EEE;margin-top:6px;overflow:hidden}.lvbar span{display:block;height:100%;background:#111}
 .lvwhy{margin-top:8px;color:var(--ink-3)}
+/* localisation */
+.locbtn{display:flex;align-items:center;gap:3px;max-width:110px;padding:0 6px}.locbtn svg{width:18px;height:18px;flex:0 0 18px;color:#FF6A00}
+.locbtn span{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){.locbtn span{display:none}.locbtn{padding:0}}
+.nearme{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:#1E6B3A}.nearme svg{width:11px;height:11px}
+.locintro{display:flex;gap:10px;align-items:flex-start}.locintro svg{width:28px;height:28px;flex:0 0 28px;color:#FF6A00}
+.aimulti ol{margin:6px 0 0 18px}.aimulti li{margin-bottom:6px}.aimulti li span{display:block;font-size:12.5px;color:var(--ink-2)}.aimulti em{font-style:normal;color:#FF6A00;font-size:11.5px}
 
 .boot{background:#fff !important;align-items:center}
 .splash{display:flex;flex-direction:column;align-items:center;gap:12px;animation:spIn .5s var(--ease) both}
@@ -5168,7 +5175,7 @@ const LEGAL={
   '<h3>Qui voit quoi</h3><p>Votre âge n\'est jamais public. Votre adresse et votre téléphone ne sont visibles que par le vendeur d\'une commande que vous passez, pour la livrer. Les pièces d\'identité ne sont vues que par le QG. Les informations d\'une boutique validée sont publiques.</p>'+
   '<h3>Où sont les données</h3><p>Chez notre hébergeur de base de données (Supabase), sur des serveurs sécurisés hors d\'Haïti, avec des règles d\'accès ligne par ligne. Le site lui-même est servi par Cloudflare. Les numéros de paiement des vendeurs ne sont visibles que par des personnes connectées.</p>'+
   '<h3>Services qui nous aident</h3><p><b>Assistant et rédaction IA</b> : vos questions à l\'assistant et les textes ou photos de produits envoyés pour rédaction passent par des fournisseurs d\'IA (Groq, Google Gemini, Mistral, OpenRouter, Cloudflare). Ne mettez pas d\'informations personnelles dans ces demandes. <b>Paiement en ligne</b> (bientôt) : le montant, la référence de commande et votre email sont transmis au prestataire de paiement. <b>Alertes</b> : si vous activez les alertes, leur texte passe par le service ntfy. <b>Erreurs</b> : quand le site plante, nous enregistrons la page et le message d\'erreur technique, sans vos mots de passe ni vos messages.</p>'+
-  '<h3>Position et pièces d\'identité</h3><p>La position GPS n\'est utilisée que si vous touchez « Je suis ici » pour une adresse : elle sert à la livraison. Les pièces d\'identité et photos de vérification sont rangées dans un espace privé lu seulement par le QG, et ne sont jamais publiées.</p>'+
+  '<h3>Position et pièces d\'identité</h3><p>À la création du compte, VAlex vous demande si vous voulez autoriser la position de votre téléphone. Si vous acceptez, elle sert uniquement à vous montrer d\'abord les produits de votre ville et de votre département (vous voyez toujours les autres). Votre position exacte reste sur votre téléphone ; votre profil privé garde seulement votre ville, votre département et une position arrondie à environ 100 m. Vous pouvez refuser et choisir votre ville à la main, ou la changer à tout moment avec l\'icône de localisation. La position sert aussi à la livraison si vous touchez « Je suis ici » pour une adresse. Les pièces d\'identité et photos de vérification sont rangées dans un espace privé lu seulement par le QG, et ne sont jamais publiées.</p>'+
   '<h3>Sécurité</h3><p>Mots de passe chiffrés, connexion sécurisée (HTTPS), double authentification obligatoire pour l\'équipe VAlex, accès aux données limité ligne par ligne. Si une fuite de données vous concernant arrivait, nous vous préviendrions.</p>'+
   '<h3>Combien de temps</h3><p>Tant que votre compte existe. Les données de commandes peuvent être gardées plus longtemps si la loi ou un litige l\'exige.</p>'+
   '<h3>Vos droits</h3><p>Voir, corriger ou supprimer vos données : depuis Compte › Mon profil, ou en écrivant via la page Aide.</p>'+
@@ -5310,7 +5317,8 @@ function aiForProduct(){
     if(r.warning){ await ask({title:'Article à vérifier',body:'<p>'+esc(r.warning)+'</p><p class="t-small">Les articles interdits sont retirés et la boutique est sanctionnée. Voir « Articles interdits ».</p>',ok:'Compris',cancel:false}); }
     const txt=(r.description||'')+((r.highlights||[]).length?'\n\n'+r.highlights.map(h=>'• '+h).join('\n'):'');
     const ok=await ask({title:'Proposition de l\'IA',body:(r.title&&!title.trim()?'<p><b>'+esc(r.title)+'</b></p>':'')+'<p style="white-space:pre-line">'+esc(txt)+'</p>'+
-      ((r.questions||[]).length?'<div class="aiq"><b>À préciser vous-même :</b><ul>'+r.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')+
+      ((r.products||[]).length>1?'<div class="aiq aimulti"><b>J\'ai repéré '+r.products.length+' produits sur la photo :</b><ol>'+r.products.map((p,i)=>'<li><b>'+esc(p.name||p.title||('Produit '+(i+1)))+'</b>'+(i===0?' <em>(cette fiche)</em>':'')+(p.ask?'<span>'+esc(p.ask)+'</span>':'')+'</li>').join('')+'</ol><p class="t-small">Publiez chaque autre produit dans sa propre fiche : la même photo peut servir.</p></div>':
+      ((r.questions||[]).length?'<div class="aiq"><b>À préciser vous-même :</b><ul>'+r.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':''))+
       '<p class="t-small" style="margin-top:8px">Relisez : vous restez responsable de la fiche. '+(r.left!=null?r.left+' rédaction'+(r.left>1?'s':'')+' restante'+(r.left>1?'s':'')+' aujourd\'hui.':'')+'</p>',ok:'Utiliser ce texte',cancel:'Annuler'});
     if(!ok)return; d.value=txt; d.dispatchEvent(new Event('input',{bubbles:true}));
     const t=$('#pT'); if(t&&!t.value.trim()&&r.title){t.value=r.title; t.dispatchEvent(new Event('input',{bubbles:true}));}
@@ -5759,6 +5767,68 @@ const _d=V.dash;
 V.dash=async function(){ const r=await _d.apply(this,arguments); if(!S.shop)return r;
   const {data:L}=await sb.rpc('shop_level',{s:S.shop.id}); const h=$('#view .phead')||$('#view h1'); if(L&&h&&!$('#view .lvcard'))h.insertAdjacentHTML('afterend',levelHTML(L,true)); return r; };
 })();
+
+
+/* =========================================================
+   PHASE 1j (1/11) — Localisation : produits près de chez moi
+   La position reste sur le téléphone (localStorage). Si l'utilisateur est connecté,
+   on garde seulement une position arrondie (≈100 m), la ville et le département dans
+   son profil, que lui seul (et le QG) peut lire.
+   ========================================================= */
+let LOC=null; try{ LOC=JSON.parse(localStorage.getItem('valex_loc')||'null'); }catch(e){}
+const lnorm=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+function matchDept(t){ const n=lnorm(t); return Object.keys(DEPTS).find(d=>n.includes(lnorm(d)))||null; }
+function matchCity(dep,t){ const l=dep?DEPTS[dep]:[].concat(...Object.values(DEPTS)); const n=lnorm(t); return (l||[]).find(c=>n&&(lnorm(c)===n||n.includes(lnorm(c))||lnorm(c).includes(n)))||null; }
+function saveLoc(l){
+  LOC=l; try{ localStorage.setItem('valex_loc',JSON.stringify(l)); localStorage.setItem('valex_loc_asked','1'); }catch(e){}
+  if(S.user&&sb){ sb.from('profiles').update({city:l.city||null,department:l.dep||undefined,geo_lat:l.lat!=null?Math.round(l.lat*1000)/1000:null,geo_lng:l.lng!=null?Math.round(l.lng*1000)/1000:null}).eq('id',S.user.id).then(()=>{},()=>{}); }
+  paintLoc(); toast('Produits près de '+(l.city||l.dep)+' en premier.'); if(location.hash===''||location.hash==='#/')route();
+}
+async function geoLocate(){
+  if(!navigator.geolocation)return toast('Votre téléphone ne donne pas sa position. Choisissez votre ville.');
+  toast('Recherche de votre position…');
+  navigator.geolocation.getCurrentPosition(async p=>{
+    const lat=p.coords.latitude, lng=p.coords.longitude; let dep=null, city=null;
+    try{ const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&accept-language=fr&lat='+lat+'&lon='+lng);
+      const d=await r.json(); const a=d.address||{}; dep=matchDept(a.state||a.region||''); city=matchCity(dep,a.city||a.town||a.village||a.municipality||a.county||'')||a.city||a.town||a.village||null; }catch(e){}
+    if(!dep&&!city)return locPick('Nous n\'avons pas reconnu votre ville. Choisissez-la :');
+    saveLoc({lat,lng,dep,city,src:'gps'});
+  },()=>locPick('Position refusée. Vous pouvez choisir votre ville :'),{enableHighAccuracy:false,timeout:12000,maximumAge:600000});
+}
+async function locPick(msg){
+  setTimeout(()=>{ if($('#lcD'))bindCity('#lcD','#lcC',(LOC||{}).city); },0);
+  const ok=await ask({title:'Votre ville',body:(msg?'<p class="t-small" style="margin-bottom:10px">'+esc(msg)+'</p>':'')+
+    '<div class="field"><label for="lcD">Département</label>'+selDept('lcD',(LOC||{}).dep||'')+'</div><div class="field" style="margin:0"><label for="lcC">Ville</label><select id="lcC"></select></div>',ok:'Enregistrer',cancel:'Annuler'});
+  if(!ok)return; const dep=window.__lcD||($('#lcD')||{}).value, city=window.__lcC||($('#lcC')||{}).value;
+  if(!dep)return toast('Choisissez au moins un département.'); saveLoc({dep,city:city||null,src:'manuel'});
+}
+document.addEventListener('change',e=>{ if(e.target&&e.target.id==='lcD')window.__lcD=e.target.value; if(e.target&&e.target.id==='lcC')window.__lcC=e.target.value; });
+async function locPrompt(){
+  try{ localStorage.setItem('valex_loc_asked','1'); }catch(e){}
+  const r=await ask({title:'Voir d\'abord ce qui est près de chez vous ?',body:'<div class="locintro">'+ico('pin',2)+'<p>VAlex peut utiliser la position de votre téléphone pour vous montrer en premier les boutiques et produits de votre ville et de votre département. Vous verrez toujours les produits plus loin.</p></div>'+
+    '<p class="t-small" style="margin-top:8px">Votre position exacte reste sur votre téléphone. Seules votre ville et une position arrondie sont gardées dans votre profil privé. <a href="#/legal/confidentialite">Confidentialité</a></p>',ok:'Autoriser ma position',cancel:'Choisir ma ville'});
+  if(r)geoLocate(); else locPick();
+}
+function locLabel(){ return LOC?(LOC.city||LOC.dep):'Ma ville'; }
+function paintLoc(){ $$('.locbtn span').forEach(s=>s.textContent=locLabel()); }
+/* icône de localisation dans l'en-tête */
+(function(){ const _sh=searchHead; searchHead=function(){ _sh(); const t=$('#topbar'); if(!t||window.QG||t.querySelector('.locbtn'))return;
+  const f=t.querySelector('a[href="#/favoris"]'); const b='<button class="iconbtn locbtn" aria-label="Ma position : '+esc(locLabel())+'">'+ico('pin',2)+'<span>'+esc(locLabel())+'</span></button>';
+  if(f)f.insertAdjacentHTML('beforebegin',b); else t.insertAdjacentHTML('beforeend',b);
+  t.querySelector('.locbtn').onclick=()=>{ if(!LOC)return locPrompt(); ask({title:'Ma position',body:'<p>Produits de <b>'+esc(locLabel())+'</b> en premier.</p>',ok:'Changer',cancel:'Fermer'}).then(x=>{ if(x)locPrompt(); }); }; }; })();
+/* tri « Pour vous » et recherche : ma ville d'abord, puis mon département, sans cacher le reste */
+(function(){ const _sl=sortList; sortList=function(list,s,q){ const a=_sl(list,s,q); if(!LOC||(s&&s!=='pert'))return a;
+  const rk=p=>(LOC.city&&lnorm(p.shop_city)===lnorm(LOC.city)?2:0)+(LOC.dep&&lnorm(p.shop_department)===lnorm(LOC.dep)?1:0);
+  return a.map((p,i)=>[p,i]).sort((x,y)=>(rk(y[0])-rk(x[0]))||(x[1]-y[1])).map(x=>x[0]); }; })();
+/* « Près de vous » sur les cartes de ma ville */
+(function(){ const _pc=pcard; pcard=function(p,i){ let h=_pc(p,i); if(LOC&&LOC.city&&lnorm(p.shop_city)===lnorm(LOC.city))h=h.replace('<span class="pc-sh">','<span class="nearme">'+ico('pin',2)+'Près de vous</span><span class="pc-sh">'); return h; }; })();
+/* demandé à l'inscription / première connexion, une seule fois */
+(function(){ const _ls=loadSession; loadSession=async function(){ const r=await _ls.apply(this,arguments);
+  try{ if(S.user&&!(LOC&&LOC.src==='gps')&&!localStorage.getItem('valex_loc_asked')&&!window.QG)setTimeout(()=>{ try{ if(localStorage.getItem('valex_loc_asked'))return; }catch(e){} if(!$('#modal.on'))locPrompt(); },1800); }catch(e){}
+  if(S.user&&!LOC&&S.profile&&(S.profile.city||S.profile.department)){ LOC={dep:S.profile.department||null,city:S.profile.city||null,src:'profil'}; paintLoc(); }
+  return r; }; })();
+/* filet de sécurité : quelle que soit la façon dont la session s'ouvre, on demande une fois */
+setInterval(()=>{ try{ if(window.QG||!S.user||localStorage.getItem('valex_loc_asked')||(LOC&&LOC.src==='gps'))return; if(document.querySelector('#modal.on'))return; locPrompt(); }catch(e){} },3000);
 
 /* signalement, disponible depuis un produit ou une boutique */
 async function reportDialog(type,id){
