@@ -1231,6 +1231,27 @@ body.hasbeta .shell .nav{top:34px}
 .dfgrid label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600}.dfgrid em{font-style:normal;color:#FF6A00;font-weight:500}
 .dfin{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;padding:0 8px}.dfin input{border:0;min-height:40px;width:100%;outline:none}.dfin b{font-size:11px;color:var(--ink-3)}
 
+/* 2/11 : relais, codes, Facebook */
+.fbbtn{margin-top:8px;gap:10px;background:#fff;border:1px solid var(--line)}
+.dropcode{margin:0 16px 4px;padding:12px 14px;border-radius:14px;background:#FFF4EC;border:1px dashed #FF6A00;display:flex;flex-direction:column;gap:2px}
+.dropcode>span{font-size:13px;color:var(--ink-2,#555)}
+.dropcode>b{font-size:30px;letter-spacing:8px;font-variant-numeric:tabular-nums}
+.dropcode>em{font-style:normal;font-size:12px;color:var(--ink-3,#777)}
+.pcodes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pcode{display:flex;flex-direction:column;padding:8px 12px;border-radius:12px;border:1px solid var(--line);min-width:120px}
+.pcode b{letter-spacing:1px}.pcode em{font-style:normal;font-size:12px;color:var(--ink-3,#777)}
+.pcode.used{opacity:.5}
+.rsteps{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.rsteps li{padding-left:22px;position:relative;color:var(--ink-3,#888);font-size:14px}
+.rsteps li:before{content:"";position:absolute;left:4px;top:5px;width:10px;height:10px;border-radius:50%;border:2px solid #ccc}
+.rsteps li.on{color:inherit;font-weight:600}.rsteps li.on:before{background:#FF6A00;border-color:#FF6A00}
+.relaiscta{display:block;margin-bottom:12px;border:1px solid #FF6A00}
+.relaiscta .card__b{display:flex;align-items:center;gap:12px}
+.relaiscta span{display:flex;flex-direction:column;flex:1}.relaiscta em{font-style:normal;font-size:13px;color:var(--ink-3,#777)}
+.rtgrid{display:grid;gap:8px}
+.rtrow{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.rtrow input{width:110px}
+
 .boot{background:#fff !important;align-items:center}
 .splash{display:flex;flex-direction:column;align-items:center;gap:12px;animation:spIn .5s var(--ease) both}
 .splash img{width:84px;height:84px;border-radius:20px}
@@ -1620,7 +1641,7 @@ async function route(){
     'videos':()=>V.feed(a), 'boutiques':()=>V.shopsList(), 'commander':()=>V.checkout(), 'merci':()=>V.thanks(),
     'mes-commandes':()=>V.myOrders(), 'commande':()=>V.orderDetail(a),
     'conditions':()=>V.legal('index'), 'confidentialite':()=>V.legal('confidentialite'), 'aide':()=>V.legal('aide'), 'legal':()=>V.legal(a||'index'),
-    'messages':()=>V.inbox(a), 'statistiques':()=>V.stats(), 'pro':()=>V.pro(), 'assistant':()=>V.assistant(), 'verification':()=>V.verification(), 'payer':()=>V.payFor(a)
+    'messages':()=>V.inbox(a), 'statistiques':()=>V.stats(), 'pro':()=>V.pro(), 'assistant':()=>V.assistant(), 'verification':()=>V.verification(), 'payer':()=>V.payFor(a), 'relais':()=>V.relay()
   };
   $('#shell').classList.toggle('feedmode',seg==='videos');
   try{ await (window.QG?V.qg:(R[seg]||R[''])).call(V); }catch(err){ fail(err,'Affichage'); }
@@ -2281,7 +2302,7 @@ const V={
       vars: p ? variants.map(v=>({id:v.id,size:v.size||'',color:v.color||'',price:fromCents(v.price_cents),lot3:v.lot3_cents?fromCents(v.lot3_cents):'',lot12:v.lot12_cents?fromCents(v.lot12_cents):'',stock:v.stock,measures:v.measures||{},open:false}))
               : [{id:null,size:'',color:'',price:'',lot3:'',lot12:'',stock:1,measures:{},open:true}],
       imgs: images.map(i=>({id:i.id,path:i.storage_path,is_primary:i.is_primary,color:i.color||''})), barcode:p?(p.barcode||''):'',
-      video: p?p.video_path:null, pay: p?(p.pay_mode||(p.cod_ok===false?'before':'cod')):null, pnet:'moncash', pnum:'', colorLabel:p?(p.color_label||''):'', group:p?(p.group_id||null):null, ship:p?(p.ship_mode||'shop'):'shop', shipFee:p&&p.ship_fee_cents!=null?fromCents(p.ship_fee_cents):'', sellUnit:p?(p.sell_unit||'piece'):'piece', perPack:p&&p.units_per_pack?p.units_per_pack:'',
+      video: p?p.video_path:null, pay: p?(p.pay_mode||(p.cod_ok===false?'before':'cod')):null, pnet:'moncash', pnum:'', colorLabel:p?(p.color_label||''):'', group:p?(p.group_id||null):null, ship:p?(p.ship_mode||'shop'):'shop', shipFee:p&&p.ship_fee_cents!=null?fromCents(p.ship_fee_cents):'', maxBuyer:p&&p.max_per_buyer?p.max_per_buyer:'', sellUnit:p?(p.sell_unit||'piece'):'piece', perPack:p&&p.units_per_pack?p.units_per_pack:'',
       removedVars:[], removedImgs:[]
     };
     let tab='info';
@@ -2314,7 +2335,7 @@ const V={
         d.title=val('#pT'); d.category_id=val('#pS')||d.category_id; d.condition=val('#pE'); d.audience=val('#pA'); if($('#pBar'))d.barcode=val('#pBar').replace(/\D/g,''); if($('#pOcc')){d.occasions=$$('#pOcc input:checked').map(x=>x.value);} if($('#pAge'))d.age_group=val('#pAge'); if($('#pKg'))d.kid_gender=val('#pKg'); if($('#pPlus'))d.plus_size=$('#pPlus').checked;
         d.price=val('#pP'); d.description=val('#pD');
         { const r=document.querySelector('input[name=pmode]:checked'); if(r)d.pay=r.value; if($('#pNet'))d.pnet=$('#pNet').value; if($('#pNum'))d.pnum=$('#pNum').value.replace(/\D/g,''); }
-        { const r=document.querySelector('input[name=shipm]:checked'); if(r)d.ship=r.value; if($('#pShip'))d.shipFee=$('#pShip').value; if($('#pCol'))d.colorLabel=$('#pCol').value.trim(); if($('#pU'))d.sellUnit=$('#pU').value; if($('#pN'))d.perPack=$('#pN').value; }
+        { const r=document.querySelector('input[name=shipm]:checked'); if(r)d.ship=r.value; if($('#pShip'))d.shipFee=$('#pShip').value; if($('#pCol'))d.colorLabel=$('#pCol').value.trim(); if($('#pU'))d.sellUnit=$('#pU').value; if($('#pN'))d.perPack=$('#pN').value; if($('#pMax'))d.maxBuyer=$('#pMax').value; }
       } else if(tab==='var'){
         d.has_variants=$('#hv')?$('#hv').checked:d.has_variants;
         d.vars.forEach((v,i)=>{
@@ -2525,7 +2546,7 @@ const V={
           condition:d.condition, barcode:d.barcode||null, audience:d.audience||null, occasions:d.occasions||[], age_group:d.age_group||null, kid_gender:d.kid_gender||null, plus_size:!!d.plus_size, status:status, has_variants:d.has_variants,
           base_price_cents:toCents(d.price),
           published_at: status==='published' ? (p&&p.published_at?p.published_at:now()) : null,
-          video_path: d.video||null, pay_mode: d.pay||null, cod_ok: d.pay?d.pay==='cod':true, color_label: d.colorLabel||null, ship_mode: d.ship==='shop'?null:d.ship, ship_fee_cents: d.ship==='fee'?toCents(d.shipFee):null, sell_unit: d.sellUnit||'piece', units_per_pack: d.sellUnit&&d.sellUnit!=='piece'&&Number(d.perPack)>=2?Math.round(Number(d.perPack)):null
+          video_path: d.video||null, pay_mode: d.pay||null, cod_ok: d.pay?d.pay==='cod':true, color_label: d.colorLabel||null, ship_mode: d.ship==='shop'?null:d.ship, ship_fee_cents: d.ship==='fee'?toCents(d.shipFee):null, sell_unit: d.sellUnit||'piece', units_per_pack: d.sellUnit&&d.sellUnit!=='piece'&&Number(d.perPack)>=2?Math.round(Number(d.perPack)):null, max_per_buyer: Number(d.maxBuyer)>=1?Math.round(Number(d.maxBuyer)):null
         };
         let pid=id;
         if(id){
@@ -3082,7 +3103,7 @@ Object.assign(V,{
     if(!S.cart.length){go('#/panier');return;}
     this.set(skeleton(2));
     const {data:vs,error}=await sb.from('product_variants')
-      .select('*, products(id,title,status,shop_id,is_demo,cod_ok,ship_mode,ship_fee_cents, shops(id,name,slug,city,phone,whatsapp), product_images(storage_path,is_primary,position))')
+      .select('*, products(id,title,status,shop_id,is_demo,cod_ok,ship_mode,ship_fee_cents, shops(id,name,slug,city,department,phone,whatsapp), product_images(storage_path,is_primary,position))')
       .in('id',S.cart.map(l=>l.variantId));
     if(error)return fail(error,'Commande');
     const valid=(vs||[]).filter(v=>v.products&&v.products.status==='published'&&!v.products.is_demo);
@@ -3093,7 +3114,7 @@ Object.assign(V,{
     const [{data:dels},{data:pays},{data:adds}]=await Promise.all([
       sb.from('shop_delivery').select('*').in('shop_id',ids), sb.from('shop_payment').select('*').in('shop_id',ids),
       sb.from('addresses').select('*').eq('user_id',S.user.id).order('created_at')]);
-    let addr=(adds||[])[0]?adds[0].id:null;
+    let addr=(adds||[])[0]?adds[0].id:null; await relayData();
     const st={};
     ids.forEach(id=>{const d=(dels||[]).find(x=>x.shop_id===id)||{mode:'separate',fee_cents:0,allows_pickup:true};
       const p=(pays||[]).find(x=>x.shop_id===id)||{cash_on_delivery:true};
@@ -3101,7 +3122,7 @@ Object.assign(V,{
       const noCod=groups[id].items.filter(v=>v.products.cod_ok===false).map(v=>v.products.title);
       const methods=[]; if(!noCod.length)methods.push('cash'); else { if(p.moncash&&p.moncash_number)methods.push('moncash'); if(p.natcash&&p.natcash_number)methods.push('natcash'); }
       if(typeof ONLINE_PAY!=='undefined'&&ONLINE_PAY)methods.push('online');
-      st[id]={d,p,methods,noCod,pay:methods[0]||null,pickup:d.mode==='pickup',ref:'',note:''};});
+      st[id]={d,p,methods,noCod,pay:methods[0]||null,pickup:d.mode==='pickup',relay:null,ref:'',note:''};});
     const qty=v=>(S.cart.find(x=>x.variantId===v.id)||{qty:1}).qty;
 
     const paint=()=>{
@@ -3116,16 +3137,19 @@ Object.assign(V,{
           '<button class="btn btn--sm" id="addAdr" style="margin-top:10px">'+ico('plus',2)+'Nouvelle adresse</button><div id="adrForm"></div></div></div>':'')+
         ids.map(id=>{const g=groups[id], s=st[id];
           const sub=g.items.reduce((t,v)=>t+lineTotal(v,qty(v)),0);
-          const ship=s.pickup?0:shipFor(g.items,s.d,((adds||[]).find(a=>a.id===addr)||{}).department); grand+=sub+ship;
+          const bdep=((adds||[]).find(a=>a.id===addr)||{}).department; const rch=relayChoices(g.shop.department,bdep);
+          const ship=s.pickup?0:s.relay?(routePrice(g.shop.department,(RLD.relays.find(r=>r.id===s.relay)||{}).department)||0):shipFor(g.items,s.d,bdep);
+          const M=s.relay?['moncash','natcash'].filter(m=>s.p[m]&&s.p[m+'_number']).concat(s.methods.includes('online')?['online']:[]):s.methods; grand+=sub+ship;
           const num=s.pay==='moncash'?s.p.moncash_number:s.pay==='natcash'?s.p.natcash_number:'';
           return '<div class="card enter" style="margin-top:14px"><div class="card__h"><h3>'+esc(g.shop.name)+'</h3><span class="t-small" style="margin-left:auto">'+esc(g.shop.city||'')+'</span></div><div class="card__b">'+
           g.items.map(v=>{const im=(v.products.product_images||[]).sort((a,b)=>(b.is_primary-a.is_primary)||(a.position-b.position))[0];
             return '<div class="citem" style="border:0;padding:6px 0"><span class="citem__img">'+(im?'<img src="'+prodImg(im.storage_path)+'" alt="">':'')+'</span>'+
             '<span class="citem__b"><strong>'+esc(v.products.title)+'</strong><span class="t-small">'+esc([v.size,v.color].filter(Boolean).join(' · '))+' × '+qty(v)+'</span>'+(lotNote(v,qty(v))?'<span class="t-small lotok">'+lotNote(v,qty(v))+'</span>':'')+'</span><b class="price">'+gds(lineTotal(v,qty(v)))+'</b></div>';}).join('')+
-          (s.d.mode!=='pickup'&&s.d.allows_pickup?'<div class="seg" style="margin-top:12px"><button data-pk="'+id+'" data-v="0" class="'+(!s.pickup?'on':'')+'">Livraison</button><button data-pk="'+id+'" data-v="1" class="'+(s.pickup?'on':'')+'">Retrait sur place</button></div>':'')+
+          (((s.d.mode!=='pickup')+(rch.length?1:0)+((s.d.mode==='pickup'||s.d.allows_pickup)?1:0))>1?'<div class="seg" style="margin-top:12px">'+(s.d.mode!=='pickup'?'<button data-pk="'+id+'" data-v="0" class="'+(!s.pickup&&!s.relay?'on':'')+'">Par le vendeur</button>':'')+(rch.length?'<button data-rl="'+id+'" class="'+(s.relay?'on':'')+'">Relais VAlex</button>':'')+((s.d.mode==='pickup'||s.d.allows_pickup)?'<button data-pk="'+id+'" data-v="1" class="'+(s.pickup?'on':'')+'">Retrait sur place</button>':'')+'</div>':'')+
+          (s.relay?'<div class="field" style="margin:10px 0 0"><label for="rl_'+id+'">Votre relais</label><select id="rl_'+id+'">'+rch.map(r=>'<option value="'+r.id+'"'+(r.id===s.relay?' selected':'')+'>'+esc(r.name+' — '+r.city+' ('+r.department+')')+' · '+gds(routePrice(g.shop.department,r.department))+'</option>').join('')+'</select><div class="hint">Prix VAlex « à partir de », revu chaque semaine sur les vrais prix du transport. Si le transport coûte moins, la différence vous est rendue. Le relais ne prend pas d\'argent : vous payez avant.</div></div>':'')+
           (s.d.mode==='pickup'?'<p class="t-small" style="margin-top:10px">Ce vendeur propose uniquement le retrait sur place à '+esc(g.shop.city||'')+'.</p>':'')+
           '<strong class="t-h3" style="display:block;margin-top:14px">Paiement</strong>'+
-          (s.methods.length?'<div class="picks" style="margin-top:8px">'+s.methods.map(m=>'<label class="pick '+(s.pay===m?'on':'')+'"><input type="radio" name="pay_'+id+'" value="'+m+'"'+(s.pay===m?' checked':'')+'>'+
+          (M.length?'<div class="picks" style="margin-top:8px">'+M.map(m=>'<label class="pick '+(s.pay===m?'on':'')+'"><input type="radio" name="pay_'+id+'" value="'+m+'"'+(s.pay===m?' checked':'')+'>'+
             '<span><strong>'+PAY_LABEL[m]+'</strong><span>'+(m==='cash'?'Vous payez le livreur à la réception.':m==='online'?'Vous payez sur MonCash après avoir confirmé. VAlex garde l\'argent jusqu\'à la livraison.':'Envoi direct au numéro '+(m==='moncash'?'MonCash':'NatCash')+' du vendeur, puis vous indiquez le numéro de transaction.')+'</span></span></label>').join('')+'</div>'
             :'<p class="t-small" style="color:var(--red)">Ce vendeur n\'a pas encore indiqué son numéro de paiement. Écrivez-lui depuis sa boutique.</p>')+
           (s.noCod.length?'<p class="t-small" style="margin-top:8px">Le vendeur demande d\'être payé avant la livraison pour « '+esc(s.noCod.join(' », « '))+' ».</p>':'')+
@@ -3138,10 +3162,13 @@ Object.assign(V,{
         '<div class="card enter" style="margin-top:14px"><div class="card__b">'+
         '<div class="sumline total"><span>Total à payer</span><b>'+gds(grand)+'</b></div>'+
         '<button class="btn btn--mango btn--wide btn--lg" id="placeIt" style="margin-top:14px">Confirmer '+(ids.length>1?'les '+ids.length+' commandes':'la commande')+'</button>'+
-        '<p class="t-small" style="margin-top:10px;text-align:center">En confirmant, vous acceptez les <a href="#/conditions" style="text-decoration:underline">conditions</a>. Vous pourrez annuler tant que le vendeur n\'a pas accepté.</p></div></div>');
+        '<p class="t-small" style="margin-top:10px;text-align:center">En confirmant, vous acceptez les <a href="#/conditions" style="text-decoration:underline">conditions</a>. Vous pourrez annuler tant que le vendeur n\'a pas remis le colis.</p></div></div>');
       const keep=()=>ids.forEach(id=>{const r=$('#ref_'+id); if(r)st[id].ref=r.value; const n=$('#note_'+id); if(n)st[id].note=n.value;});
       $$('input[name=ad]').forEach(r=>r.onchange=()=>{keep();addr=r.value;paint();});
-      $$('[data-pk]').forEach(b=>b.onclick=()=>{keep();st[b.dataset.pk].pickup=b.dataset.v==='1';paint();});
+      $$('[data-pk]').forEach(b=>b.onclick=()=>{keep();st[b.dataset.pk].pickup=b.dataset.v==='1';st[b.dataset.pk].relay=null;if(!st[b.dataset.pk].methods.includes(st[b.dataset.pk].pay))st[b.dataset.pk].pay=st[b.dataset.pk].methods[0]||null;paint();});
+      $$('[data-rl]').forEach(b=>b.onclick=()=>{keep();const s=st[b.dataset.rl],g=groups[b.dataset.rl],bd=((adds||[]).find(a=>a.id===addr)||{}).department;s.pickup=false;s.relay=(relayChoices(g.shop.department,bd)[0]||{}).id||null;
+        const M=['moncash','natcash'].filter(m=>s.p[m]&&s.p[m+'_number']); if(s.pay==='cash'||!s.pay)s.pay=M[0]||(s.methods.includes('online')?'online':null);paint();});
+      ids.forEach(id=>{const e=$('#rl_'+id); if(e)e.onchange=()=>{keep();st[id].relay=e.value;paint();};});
       ids.forEach(id=>$$('input[name=pay_'+id+']').forEach(r=>r.onchange=()=>{keep();st[id].pay=r.value;paint();}));
       const aa=$('#addAdr'); if(aa)aa.onclick=()=>{keep(); $('#adrForm').innerHTML=
         '<div class="field" style="margin-top:12px"><label for="nN">Qui reçoit <span class="req">*</span></label><input type="text" id="nN" value="'+esc(((S.profile||{}).first_name||'')+' '+((S.profile||{}).last_name||''))+'"><div class="err">Champ obligatoire.</div></div>'+
@@ -3165,6 +3192,7 @@ Object.assign(V,{
         if(ids.some(id=>st[id].pay==='moncash'||st[id].pay==='natcash')&&!await ask({title:'Paiement direct au vendeur',body:'<p><b>VAlex n\'est pas responsable de ce paiement.</b></p><p style="margin-top:8px">L\'argent part directement sur le numéro du vendeur. En aucun cas VAlex ne vous remboursera si le vendeur ne livre pas.</p><p style="margin-top:8px">Bientôt, « Payer via VAlex » gardera votre argent jusqu\'à la livraison.</p>',ok:'J\'ai compris, je commande',cancel:'Annuler'}))return;
         for(const id of ids){ const s=st[id];
           if(!s.pay)return toast(groups[id].shop.name+' : aucun moyen de paiement disponible.');
+          if(s.relay&&s.pay==='cash')return toast(groups[id].shop.name+' : avec un relais, payez avant la livraison.');
           if((s.pay==='moncash'||s.pay==='natcash')&&s.ref.trim().length<4)return toast(groups[id].shop.name+' : indiquez le numéro de transaction.'); }
         busy('#placeIt',true,'Envoi…');
         const done=[];
@@ -3173,6 +3201,7 @@ Object.assign(V,{
             p_address:s.pickup?null:addr,p_payment:s.pay,p_payment_ref:s.ref||null,p_note:s.note||null,p_pickup:s.pickup});
           if(error){ busy('#placeIt',false); fail(error,g.shop.name); if(done.length)break; return; }
           const row=Array.isArray(data)?data[0]:data;
+          if(s.relay){ const {error:re}=await sb.rpc('order_use_relay',{p_order:row.order_id,p_relay:s.relay}); if(re)fail(re,'Relais'); }
           done.push({id:row.order_id,number:row.order_number,shop:g.shop,items:g.items.map(v=>v.products.title+(v.size?' ('+v.size+')':'')+' × '+qty(v)),pay:s.pay,pickup:s.pickup,
             total:g.items.reduce((t,v)=>t+v.price_cents*qty(v),0)+(s.pickup?0:((s.d.mode==='separate'||s.d.mode==='zones')?s.d.fee_cents:0))});
           S.cart=S.cart.filter(l=>!g.items.some(v=>v.id===l.variantId)); saveCart();
@@ -5909,13 +5938,188 @@ window.addEventListener('click',async e=>{
 const UNITS={piece:'À la pièce',caisse:'Par caisse',carton:'Par carton',paquet:'Par paquet',sac:'Par sac',douzaine:'Par douzaine'};
 function sellUnitHTML(d){
   return '<div class="row2" style="margin-top:16px"><div class="field"><label for="pU">Vendu</label><select id="pU">'+Object.entries(UNITS).map(([k,l])=>'<option value="'+k+'"'+((d.sellUnit||'piece')===k?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
-    '<div class="field" id="pNw"'+((d.sellUnit||'piece')==='piece'?' hidden':'')+'><label for="pN">Unités dans une '+esc(((d.sellUnit||'caisse')==='douzaine'?'douzaine':(d.sellUnit||'caisse')))+'</label><input type="number" id="pN" min="2" step="1" inputmode="numeric" value="'+esc(d.perPack||'')+'" placeholder="24"><div class="hint">Le prix indiqué plus haut est celui de la '+esc(d.sellUnit&&d.sellUnit!=='piece'?d.sellUnit:'caisse')+' entière.</div></div></div>';
+    '<div class="field" id="pNw"'+((d.sellUnit||'piece')==='piece'?' hidden':'')+'><label for="pN">Unités dans une '+esc(((d.sellUnit||'caisse')==='douzaine'?'douzaine':(d.sellUnit||'caisse')))+'</label><input type="number" id="pN" min="2" step="1" inputmode="numeric" value="'+esc(d.perPack||'')+'" placeholder="24"><div class="hint">Le prix indiqué plus haut est celui de la '+esc(d.sellUnit&&d.sellUnit!=='piece'?d.sellUnit:'caisse')+' entière.</div></div></div>'+
+    '<div class="field" style="margin-top:12px"><label for="pMax">Maximum par client et par jour <span class="opt">— facultatif</span></label><input type="number" id="pMax" min="1" step="1" inputmode="numeric" value="'+esc(d.maxBuyer||'')+'" placeholder="Pas de limite"><div class="hint">Pour les articles rares : un seul client ne peut pas tout acheter pour revendre plus cher.</div></div>';
 }
 document.addEventListener('change',e=>{ if(e.target&&e.target.id==='pU'){ const w=$('#pNw'); if(w)w.hidden=e.target.value==='piece'; const n=$('#pN'); if(n&&e.target.value==='douzaine'&&!n.value)n.value=12; } });
 (function(){ const _p=V.product; V.product=async function(id){ await _p.apply(this,arguments);
   const pid=String(id||'').split('?')[0]; const {data:pr}=await sb.from('products').select('sell_unit,units_per_pack,base_price_cents').eq('id',pid).maybeSingle();
   if(!pr||!pr.sell_unit||pr.sell_unit==='piece'||!pr.units_per_pack)return; const c=$('#view .dchips'); if(!c)return;
   c.insertAdjacentHTML('afterbegin','<span class="dchip ok">'+ico('box',2)+UNITS[pr.sell_unit].replace('Par ','')+' de '+pr.units_per_pack+' · '+gds(Math.round((pr.base_price_cents||0)/pr.units_per_pack))+' l\'unité</span>'); }; })();
+
+
+/* =========================================================
+   PHASE 1l (2/11) — connexion Google/Facebook fiable, plus d'acceptation (24 h pour remettre le colis),
+   relais VAlex (codes, photos, suivi), prix de route, codes partenaires, limite par client
+   ========================================================= */
+ORDER_LABEL.pending='À remettre par le vendeur'; ORDER_LABEL.confirmed='En préparation';
+const RSTEP={at_origin:'Déposé au relais de départ',in_transit:'En route vers votre relais',at_destination:'Arrivé : à retirer au relais',picked_up:'Retiré'};
+
+/* ---------- 1. Connexion Google / Facebook : on vérifie d'abord que le fournisseur est branché ---------- */
+let AUTHSET=null;
+async function authSettings(){ if(AUTHSET)return AUTHSET; try{ const r=await fetch(SB_URL+'/auth/v1/settings',{headers:{apikey:SB_KEY}}); AUTHSET=(await r.json()).external||{}; }catch(e){ AUTHSET={}; } return AUTHSET; }
+async function oauthIn(p){
+  const st=await authSettings(); const nm=p==='google'?'Google':'Facebook';
+  const off=()=>ask({title:nm+' pas encore branché',body:'<p>La connexion avec '+nm+' s\'active dès que VAlex aura terminé son réglage. En attendant, créez votre compte avec votre email : ça prend une minute.</p>',ok:'Compris',cancel:false});
+  if(st[p]===false)return off();
+  const {error}=await sb.auth.signInWithOAuth({provider:p,options:{redirectTo:location.origin+location.pathname}});
+  if(error){ if(/provider|enabled|unsupported/i.test(error.message||''))return off(); fail(error,nm); }
+}
+(function(){ const _a=V.account; V.account=async function(){ const r=await _a.apply(this,arguments);
+  const g=$('#gIn'); if(g&&!$('#fIn')){ g.onclick=()=>oauthIn('google');
+    g.insertAdjacentHTML('afterend','<button class="btn btn--wide fbbtn" id="fIn"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z"/></svg>Continuer avec Facebook</button>');
+    $('#fIn').onclick=()=>oauthIn('facebook'); }
+  if(S.user&&!$('#relaisLink')){ const {data:rl}=await sb.rpc('my_relay'); if(rl){ const v=$('#view'); if(v)v.insertAdjacentHTML('afterbegin','<a class="card enter relaiscta" id="relaisLink" href="#/relais"><div class="card__b">'+ico('box',2)+'<span><b>Espace relais VAlex</b><em>Taper les codes des colis</em></span>'+ico('chev',2)+'</div></a>'); } }
+  return r; }; })();
+
+/* ---------- 2. Données relais et prix de route (petites tables publiques) ---------- */
+let RLD=null;
+async function relayData(){ if(RLD)return RLD; const [{data:r},{data:p}]=await Promise.all([sb.from('relays').select('id,name,department,city,landmark,hours,phone').eq('is_active',true).order('name'), sb.from('route_prices').select('from_dept,to_dept,price_cents').eq('status','approved')]);
+  RLD={relays:r||[],routes:Object.fromEntries((p||[]).map(x=>[x.from_dept+'>'+x.to_dept,x.price_cents]))}; return RLD; }
+const routePrice=(from,to)=>RLD&&RLD.routes[from+'>'+to];
+function relayChoices(shopDept,buyerDept){ if(!RLD)return []; return RLD.relays.filter(r=>routePrice(shopDept,r.department)!=null).sort((a,b)=>(b.department===buyerDept)-(a.department===buyerDept)); }
+
+/* ---------- 3. Commandes vendeur : plus d'acceptation, 24 h pour remettre le colis ---------- */
+const OST2=[['pending','wait','À remettre'],['shipped','truck','En route'],['delivered','star','Livrées'],['cancelled','x','Annulées']];
+const HOWTO2='<details class="howto"><summary>'+ico('help',2)+'Comment avancent les commandes ?</summary><ol>'+
+  '<li><b>À remettre</b> — le client a commandé. Vous avez <b>24 heures</b> pour remettre le colis : au relais VAlex (avec le code de dépôt) ou en le donnant à votre livreur (« En route »). Sinon la commande est annulée toute seule et le stock revient.</li>'+
+  '<li><b>En route</b> — le colis voyage. Si la commande passe par un relais, ce sont les relais qui tapent les codes : vous n\'avez rien à faire.</li>'+
+  '<li><b>Livrée</b> — le client a donné son code à 6 chiffres. C\'est la preuve. Si VAlex a encaissé, vous êtes payé 48 h après.</li>'+
+  '<li><b>Annulée</b> — par vous (avec une raison), par le client avant la remise, ou délai de 24 h dépassé.</li></ol>'+
+  '<p class="t-small">Délais de livraison après la remise : même ville 24 h · même département 48 h · autre département 4 jours.</p></details>';
+
+V.orders=async function(){
+  if(sb)sb.rpc('expire_pending_orders').then(()=>{},()=>{});
+  let t=(location.hash.split('?t=')[1]||'pending'); if(t==='confirmed')t='pending';
+  this.set('<div class="phead enter"><div class="phead__t"><h1>Commandes</h1><p>Remettez chaque colis dans les 24 h : au relais VAlex ou à votre livreur.</p></div></div>'+
+    '<div class="otabs otabs--v" id="vot">'+OST2.map(([k,i,l])=>'<a href="#/commandes?t='+k+'" class="'+(k===t?'on':'')+'">'+l+'<span id="vc_'+k+'"></span></a>').join('')+'</div>'+HOWTO2+
+    '<div id="ores">'+skeleton(2)+'</div>');
+  const [{data,error},{data:codes}]=await Promise.all([sb.from('orders').select('*, order_items(*)').eq('shop_id',S.shop.id).order('created_at',{ascending:false}), sb.from('order_drop_codes').select('order_id,code')]);
+  if(error)return fail(error,'Commandes');
+  await relayData();
+  const CODE=Object.fromEntries((codes||[]).map(c=>[c.order_id,c.code]));
+  const all=(data||[]).map(o=>Object.assign(o,{st:o.status==='confirmed'?'pending':o.status}));
+  OST2.forEach(([k])=>{const n=all.filter(o=>o.st===k).length; const e=$('#vc_'+k); if(e&&n)e.textContent=n;});
+  const l=all.filter(o=>o.st===t);
+  const near=RLD.relays.filter(r=>r.department===S.shop.department);
+  $('#ores').innerHTML=l.length?l.map(o=>{
+    const relay=o.delivery_mode==='relay', dest=relay&&RLD.relays.find(r=>r.id===o.relay_to);
+    const urgent=o.st==='pending'&&o.accept_by&&(new Date(o.accept_by)-Date.now())<3*36e5;
+    return '<div class="card ocard" style="margin-bottom:12px"><div class="card__h"><h3>'+esc(o.number)+'</h3><span class="badge '+ORDER_BADGE[o.status]+'" style="margin-left:auto">'+(relay&&o.relay_step?RSTEP[o.relay_step]:ORDER_LABEL[o.status])+'</span></div>'+
+    (o.st==='pending'&&o.accept_by?'<div class="timer'+(urgent?' urgent':'')+'">'+ico('clock',2)+'<span>À remettre avant le <b>'+fdt(o.accept_by)+'</b> · reste '+left(o.accept_by)+'</span></div>':'')+
+    (relay&&o.st==='pending'?'<div class="dropcode"><span>Code de dépôt à donner au relais</span><b>'+esc(CODE[o.id]||'······')+'</b><em>Le client ne voit jamais ce code. Le relais le tape et photographie le colis.</em>'+
+      (near.length?'<div class="t-small" style="margin-top:6px">Relais près de vous : '+near.map(r=>'<b>'+esc(r.name)+'</b> ('+esc(r.city)+(r.hours?' · '+esc(r.hours):'')+')').join(', ')+'</div>':'<div class="t-small" style="margin-top:6px">Aucun relais dans votre département pour l\'instant : déposez au relais le plus proche.</div>')+'</div>':'')+
+    '<div class="card__b">'+
+    (o.order_items||[]).map(it=>'<div class="citem" style="border:0;padding:4px 0"><span class="citem__img">'+(it.image_path?'<img src="'+prodImg(it.image_path)+'" alt="">':'')+'</span><span class="citem__b"><strong>'+esc(it.title)+'</strong><span class="t-small">'+esc(it.variant_label||'')+' × '+it.qty+'</span></span><b class="price">'+gds(it.line_total_cents||it.unit_price_cents*it.qty)+'</b></div>').join('')+
+    '<table class="measure-tab" style="margin-top:8px">'+
+    '<tr><td>Client</td><td>'+esc(o.ship_name||'—')+'</td></tr>'+
+    '<tr><td>'+(o.delivery_mode==='pickup'?'Retrait':relay?'Relais du client':'Livrer à')+'</td><td>'+(o.delivery_mode==='pickup'?'Le client passe chercher':relay?esc(dest?dest.name+' — '+dest.city:o.ship_city||''):esc((o.ship_city||'')+' — '+(o.ship_landmark||'')))+'</td></tr>'+
+    '<tr><td>Paiement</td><td>'+PAY_LABEL[o.payment_method]+(o.payment_ref?' · n° '+esc(o.payment_ref):'')+'</td></tr>'+
+    '<tr><td>Total</td><td><b>'+gds(o.total_cents)+'</b>'+(o.discount_cents?' <span class="t-small">(remise VAlex '+gds(o.discount_cents)+')</span>':'')+'</td></tr>'+
+    (o.note?'<tr><td>Message</td><td>'+esc(o.note)+'</td></tr>':'')+
+    '<tr><td>Reçue le</td><td>'+fdt(o.created_at)+'</td></tr>'+
+    (o.shipped_at?'<tr><td>Remise le</td><td>'+fdt(o.shipped_at)+'</td></tr>':'')+
+    (o.due_by&&o.status==='shipped'?'<tr><td>À livrer avant</td><td>'+fdt(o.due_by)+'</td></tr>':'')+
+    (o.cancel_reason?'<tr><td>Raison</td><td>'+esc(o.cancel_reason)+'</td></tr>':'')+'</table></div>'+
+    '<div class="card__f">'+
+    (o.status!=='cancelled'?'<button class="btn btn--sm" data-chato="'+o.id+'">'+ico('chat',2)+'Écrire au client</button>':'')+
+    (!relay&&o.st==='pending'?'<button class="btn btn--sm btn--pri" data-oa="ship" data-o="'+o.id+'">'+(o.delivery_mode==='pickup'?'Prête à retirer':'Colis remis : en route')+'</button>':'')+
+    (!relay&&['pending','shipped'].includes(o.st)?'<button class="btn btn--sm btn--mango" data-oa="deliver" data-o="'+o.id+'">Livrée (code)</button>':'')+
+    (o.payment_status==='declared'&&o.status!=='cancelled'?'<button class="btn btn--sm" data-oa="paid" data-o="'+o.id+'">Paiement reçu</button>':'')+
+    (o.st==='pending'?'<button class="btn btn--sm btn--danger" data-oa="cancel" data-o="'+o.id+'">Annuler</button>':'')+
+    '</div></div>';}).join('')
+    :'<div class="card"><div class="empty"><div class="empty__ic">'+ico('cart')+'</div><h3>Rien ici</h3><p>'+(t==='pending'?'Les nouvelles commandes arrivent ici. Vous serez prévenu par la cloche.':'Aucune commande dans cet onglet.')+'</p></div></div>';
+  $$('[data-chato]').forEach(b=>b.onclick=async ()=>{ const {data:cid,error}=await sb.rpc('seller_open_conversation',{p_order:b.dataset.chato}); if(error)return fail(error,'Message'); go('#/messages/'+cid); });
+  $$('[data-oa]').forEach(b=>b.onclick=async ()=>{
+    const a=b.dataset.oa; let code=null, note=null;
+    if(a==='deliver'){ if(!await ask({title:'Code de réception',body:'<p>Demandez au client son code à 6 chiffres, une fois l\'article remis.</p><div class="field" style="margin:10px 0 0"><input type="text" id="dC" inputmode="numeric" maxlength="6" placeholder="000000" style="font-size:22px;letter-spacing:6px;text-align:center"></div>',ok:'Valider'}))return; code=($('#dC')||{}).value; }
+    if(a==='cancel'){ if(!await ask({title:'Annuler cette commande ?',body:'<p>Le stock est remis en vente et le client voit la raison. Annuler souvent fait baisser votre titre de vendeur.</p><div class="field" style="margin:10px 0 0"><label for="cR">Raison</label><input type="text" id="cR" placeholder="Article plus disponible…"></div>',ok:'Annuler la commande',danger:true}))return; note=($('#cR')||{}).value; }
+    if(a==='paid'&&!await ask({title:'Paiement bien reçu ?',body:'<p>Vérifiez sur votre téléphone que le transfert est arrivé avant de confirmer.</p>',ok:'Oui, reçu'}))return;
+    const {error}=await sb.rpc('order_action',{p_order:b.dataset.o,p_action:a,p_code:code,p_note:note});
+    if(error)return fail(error,'Commande');
+    toast('Commande mise à jour.'); go('#/commandes?t='+({ship:'shipped',deliver:'delivered',cancel:'cancelled'}[a]||t));
+  });
+};
+
+/* le client : texte juste (plus d'acceptation) + suivi des relais */
+(function(){ const _d=V.orderDetail; V.orderDetail=async function(id){ await _d.call(this,id);
+  const oid=String(id||'').split('?')[0];
+  const {data:o}=await sb.from('orders').select('id,status,accept_by,delivery_mode,relay_step,relay_to,due_by,discount_cents,cancel_reason').eq('id',oid).maybeSingle(); if(!o)return;
+  const st=$('#view .ostate'); const hw=$('#view .howto');
+  const msg={pending:'Le vendeur a jusqu\'au <b>'+(o.accept_by?fdt(o.accept_by):'—')+'</b> pour remettre votre colis. Sinon la commande est annulée toute seule'+(o.delivery_mode==='relay'?'':'')+'.',
+    confirmed:'Le vendeur prépare votre colis.', shipped:o.delivery_mode==='relay'?(RSTEP[o.relay_step]||'En route')+(o.due_by?' · prévu avant le <b>'+fdt(o.due_by)+'</b>':''):'Votre colis est en route. Donnez votre code seulement quand l\'article est dans vos mains.',
+    delivered:'Commande livrée. Pensez à noter l\'article et la boutique.', cancelled:'Commande annulée'+(o.cancel_reason?' : '+esc(o.cancel_reason):'.')}[o.status];
+  if(st&&msg)st.querySelector('span').innerHTML=msg;
+  if(hw)hw.outerHTML=HOWTO2;
+  if(o.delivery_mode==='relay'){ await relayData(); const r=RLD.relays.find(x=>x.id===o.relay_to);
+    const steps=['at_origin','in_transit','at_destination','picked_up'], i=steps.indexOf(o.relay_step);
+    const h=$('#view .ostate'); if(h)h.insertAdjacentHTML('afterend','<div class="card enter rtrack"><div class="card__h">'+ico('box',2)+'<h3>Relais VAlex</h3></div><div class="card__b">'+
+      (r?'<p><b>'+esc(r.name)+'</b> — '+esc(r.city)+(r.landmark?' · '+esc(r.landmark):'')+(r.hours?'<br><span class="t-small">'+esc(r.hours)+'</span>':'')+'</p>':'')+
+      '<ol class="rsteps">'+steps.map((s,k)=>'<li class="'+(k<=i?'on':'')+'">'+RSTEP[s]+'</li>').join('')+'</ol>'+
+      '<p class="t-small" style="margin-top:8px">Au relais, donnez votre code de réception seulement quand le colis est dans vos mains. Le relais ne prend pas d\'argent.</p></div></div>'); }
+}; })();
+
+/* ---------- 4. Espace relais (même site, compte nommé relais par le QG) ---------- */
+V.relay=async function(){
+  topbar('back',{title:'Relais VAlex'});
+  if(!S.user)return go('#/compte');
+  const {data:rl}=await sb.rpc('my_relay');
+  if(!rl){ this.set('<div class="card enter"><div class="empty"><div class="empty__ic">'+ico('box')+'</div><h3>Devenir relais VAlex</h3><p>Un relais est un local de confiance (boutique, bureau, dépôt) qui reçoit et remet les colis. Il est payé pour chaque colis et doit taper les codes sur son téléphone. Écrivez à VAlex depuis « Mon avis » pour proposer votre local.</p></div></div>'); return; }
+  const paint=async ()=>{
+    const {data:q,error}=await sb.rpc('relay_queue'); if(error)return fail(error,'Relais');
+    const mine=(q||[]);
+    this.set('<div class="phead enter"><div class="phead__t"><h1>Relais VAlex</h1><p>Chaque colis se valide avec un code, en ligne. Sans connexion : n\'acceptez pas le colis.</p></div></div>'+
+      '<div class="card enter"><div class="card__b">'+
+      '<div class="seg" id="rStep" style="margin-bottom:12px"><button data-s="drop" class="on">Dépôt vendeur</button><button data-s="sent">Envoyé</button><button data-s="arrived">Arrivé ici</button><button data-s="pickup">Retrait client</button></div>'+
+      '<p class="t-small" id="rHelp"></p>'+
+      '<div class="field" style="margin:10px 0 0"><input id="rCode" inputmode="numeric" maxlength="6" placeholder="000000" style="font-size:26px;letter-spacing:8px;text-align:center"></div>'+
+      '<div class="field" id="rPhW" style="margin:10px 0 0"><label for="rPh">Photo du colis <span class="req">*</span></label><input type="file" id="rPh" accept="image/*" capture="environment"><div class="hint">Elle prouve l\'état du colis à cette étape. En cas de casse, on sait où elle a eu lieu.</div></div>'+
+      '<details style="margin-top:8px"><summary class="t-small">Deux colis ont le même code ?</summary><div class="field" style="margin:8px 0 0"><input id="rNum" placeholder="N° de commande, ex. VX-1042"></div></details>'+
+      '<button class="btn btn--pri btn--wide" id="rGo" style="margin-top:12px">Valider</button></div></div>'+
+      '<div class="sechead"><h2>Colis chez vous ('+mine.length+')</h2></div>'+
+      (mine.length?mine.map(x=>'<div class="card" style="margin-bottom:8px"><div class="card__b"><strong>'+esc(x.number)+'</strong> <span class="badge badge--soon">'+esc(RSTEP[x.step]||x.step)+'</span><p class="t-small" style="margin-top:4px">'+esc((x.origin||'?')+' → '+(x.dest||'?'))+(x.due_by?' · avant le '+fdt(x.due_by):'')+'</p></div></div>').join(''):'<p class="t-small">Aucun colis en attente.</p>'));
+    let step='drop'; const H={drop:'Le vendeur vous donne le colis et son code de dépôt. Tapez-le et photographiez le colis.',sent:'Le colis part vers le relais du client : tapez son code de dépôt.',arrived:'Un colis arrive pour un client de chez vous : tapez son code de dépôt et photographiez-le. Le client est prévenu.',pickup:'Le client vient chercher : tapez SON code de réception, puis remettez le colis.'};
+    const sync=()=>{ $$('#rStep button').forEach(b=>b.classList.toggle('on',b.dataset.s===step)); $('#rHelp').textContent=H[step]; $('#rPhW').hidden=!(step==='drop'||step==='arrived'); };
+    $$('#rStep button').forEach(b=>b.onclick=()=>{step=b.dataset.s;sync();}); sync();
+    $('#rGo').onclick=async ()=>{
+      const code=($('#rCode').value||'').replace(/\D/g,''); if(code.length!==6)return toast('Le code a 6 chiffres.');
+      if(!navigator.onLine)return toast('Pas de connexion : n\'acceptez pas le colis maintenant.');
+      let path=null;
+      if(step==='drop'||step==='arrived'){ const f=$('#rPh').files[0]; if(!f)return toast('Prenez la photo du colis.');
+        busy('#rGo',true,'Envoi de la photo…'); const blob=await shrink(f,1280); path=rl+'/'+Date.now()+'.jpg';
+        const {error:ue}=await sb.storage.from('relay-photos').upload(path,blob,{contentType:'image/jpeg'}); if(ue){busy('#rGo',false);return fail(ue,'Photo');} }
+      busy('#rGo',true,'…');
+      const {data,error}=await sb.rpc('relay_action',{p_code:code,p_step:step,p_photo:path,p_number:(($('#rNum')||{}).value||'').trim()||null}); busy('#rGo',false);
+      if(error)return fail(error,'Relais');
+      await ask({title:'C\'est noté',body:'<p>Colis <b>'+esc(data.number)+'</b> : '+({drop:'déposé',sent:'envoyé',arrived:'arrivé, le client est prévenu',pickup:'remis au client. Merci'}[step])+'.</p>',ok:'OK',cancel:false}); paint(); };
+  };
+  paint();
+};
+async function shrink(file,max){ try{ const img=await createImageBitmap(file); const k=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); return await new Promise(r=>c.toBlob(r,'image/jpeg',.8)); }catch(e){ return file; } }
+
+/* ---------- 5. Codes partenaires (tableau de bord vendeur) ---------- */
+(function(){ const _d=V.dash; V.dash=async function(){ const r=await _d.apply(this,arguments); if(!S.shop||$('#pcCard'))return r;
+  const v=$('#view'); if(!v)return r;
+  v.insertAdjacentHTML('beforeend','<div class="card enter" id="pcCard" style="margin-top:14px"><div class="card__h">'+ico('star',2)+'<h3>Codes partenaires</h3></div><div class="card__b" id="pcB"><p class="t-small">Chargement…</p></div></div>');
+  const {data:codes,error}=await sb.rpc('my_partner_codes');
+  const {data:red}=await sb.from('partner_redemptions').select('code,status,new_shop_id');
+  const used=(red||[]).find(x=>x.new_shop_id===S.shop.id);
+  $('#pcB').innerHTML=(error?'<p class="t-small">'+esc(error.message)+'</p>':
+    '<p class="t-small">Donnez un code à un commerçant qui ouvre sa boutique. Le parrainage compte quand il a fait sa <b>première vraie livraison</b>.</p>'+
+    '<div class="pcodes">'+(codes||[]).map(c=>'<span class="pcode'+(c.uses>=c.max_uses?' used':'')+'"><b>'+esc(c.code)+'</b><em>'+(c.kind==='pro'?'Pro · ':'')+(c.uses>=c.max_uses?'utilisé':'libre')+'</em></span>').join('')+'</div>'+
+    '<p class="t-small" style="margin-top:6px">Parrainages : '+(red||[]).filter(x=>x.new_shop_id!==S.shop.id).map(x=>({waiting:'en attente de livraison',earned:'gagné',paid:'payé',refused:'refusé'})[x.status]).join(', ')+((red||[]).filter(x=>x.new_shop_id!==S.shop.id).length?'':'aucun pour l\'instant')+'</p>')+
+    (used?'<p class="t-small" style="margin-top:10px">Vous êtes venu avec le code <b>'+esc(used.code)+'</b>.</p>':'<div class="field" style="margin:12px 0 0"><label for="pcIn">On vous a donné un code ?</label><div style="display:flex;gap:8px"><input id="pcIn" placeholder="VX-XXXXXX" style="text-transform:uppercase"><button class="btn btn--sm btn--pri" id="pcGo">Utiliser</button></div></div>');
+  const g=$('#pcGo'); if(g)g.onclick=async ()=>{ const {error}=await sb.rpc('redeem_partner_code',{p_code:$('#pcIn').value}); if(error)return fail(error,'Code'); toast('Code enregistré. Merci !'); $('#pcCard').remove(); V.dash(); };
+  return r; }; })();
+
+/* ---------- 6. Fiche produit : limite par client + relais « à partir de » ---------- */
+(function(){ const _p=V.product; V.product=async function(id){ await _p.apply(this,arguments);
+  const pid=String(id||'').split('?')[0]; const c=$('#view .dchips'); if(!c)return;
+  const {data:pr}=await sb.from('products').select('max_per_buyer,shops(department)').eq('id',pid).maybeSingle(); if(!pr)return;
+  if(pr.max_per_buyer)c.insertAdjacentHTML('beforeend','<span class="dchip">'+ico('user',2)+'Maximum '+pr.max_per_buyer+' par client</span>');
+  await relayData(); const dep=(typeof LOC!=='undefined'&&LOC&&LOC.department)||(S.profile||{}).department; const from=(pr.shops||{}).department;
+  const pc=dep&&from&&routePrice(from,dep); if(pc&&RLD.relays.some(r=>r.department===dep))c.insertAdjacentHTML('beforeend','<span class="dchip ok">'+ico('box',2)+'Relais VAlex vers '+esc(dep)+' à partir de '+gds(pc)+'</span>');
+}; })();
 
 /* signalement, disponible depuis un produit ou une boutique */
 async function reportDialog(type,id){
