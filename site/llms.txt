@@ -1,0 +1,46 @@
+# VAlex Boutique
+
+> VAlex Boutique est une place de marché en ligne en Haïti. Des vendeurs indépendants y ouvrent une boutique, publient leurs articles et reçoivent des commandes. VAlex met en relation acheteurs et vendeurs. VAlex n'est pas le vendeur des articles, sauf mention contraire sur la fiche.
+
+Le service est en cours de lancement. Le catalogue public peut rester vide tant que les premières boutiques ne sont pas validées. Aucun chiffre de fréquentation, aucune boutique, aucun produit, aucune commande et aucun avis ne sont inventés pour remplir le site.
+
+## Pages publiques
+
+- [Accueil](https://valexboutique.store/): catalogue, recherche, boutiques et catégories.
+- [À propos](https://valexboutique.store/a-propos): mission, fonctionnement, gratuité de lancement et engagements.
+- [FAQ](https://valexboutique.store/faq): 24 questions fréquentes sur les commandes, la livraison, les paiements, la gratuité, le parrainage et le support.
+- [Devenir vendeur](https://valexboutique.store/#/devenir-vendeur): ouverture d'une boutique et conditions de lancement.
+- [Aide](https://valexboutique.store/#/aide): réponses courtes pour acheter, vendre et signaler un problème.
+- [Conditions d'utilisation](https://valexboutique.store/#/conditions): règles générales, commandes, paiement et responsabilité.
+- [Conditions des vendeurs](https://valexboutique.store/#/legal/vendeurs): ouverture, articles, prix, commandes et coût.
+- [Confidentialité](https://valexboutique.store/#/confidentialite): données collectées, accès, conservation et droits.
+- [Retours et remboursements](https://valexboutique.store/#/legal/retours): annulation, livraison et politique de retour.
+- [Articles interdits et sanctions](https://valexboutique.store/#/legal/interdits): liste des produits interdits et échelle des sanctions.
+- [Conditions des livreurs](https://valexboutique.store/#/legal/livreurs): candidature et tarifs prévus de la livraison VAlex.
+
+## Faits vérifiables
+
+- Les boutiques sont examinées avant d'être visibles.
+- Le badge « Vérifiée par VAlex » demande une pièce d'identité et, si elle existe, la vérification de la boutique physique.
+- Le paiement à la livraison en espèces est disponible lorsque le vendeur le propose.
+- Le paiement avant livraison se fait directement sur le numéro MonCash ou NatCash du vendeur. VAlex ne détient pas cet argent et ne peut pas le rembourser.
+- Le paiement en ligne via VAlex n'est pas activé.
+- L'ouverture et la tenue d'une boutique éligible sont gratuites jusqu'au 31 décembre 2026 inclus, calculées côté serveur sur le fuseau America/Port-au-Prince.
+- Après le 31 décembre 2026, aucun prélèvement automatique et aucune suspension automatique ne sont prévus. Les conditions seront annoncées à l'avance.
+- Les commissions de parrainage de 2 % sont inscrites dans un registre comptable distinct, sans solde disponible, sans portefeuille et sans retrait.
+- La collecte de notes et d'avis est fermée. Aucune nouvelle note ne peut être soumise. Les données historiques restent conservées en base, sans être affichées.
+- Le support comprend un assistant et un transfert vers un humain, en français et en créole haïtien. Les pièces jointes acceptées sont JPG, PNG, WebP, PDF et texte, dans la limite de 5 Mo.
+- VAlex ne vend aucune donnée personnelle et n'affiche pas de publicité ciblée sur les messages.
+
+## Ce que VAlex n'expose pas
+
+- Aucun portefeuille acheteur ou vendeur, aucun solde, aucun dépôt, aucun retrait.
+- Aucun faux avis, faux compteur, fausse note ou fausse statistique.
+- Aucun faux contenu publicitaire et aucun compteur d'emplacements inventé.
+- Aucun prélèvement automatique après la période de gratuité.
+
+## Contact
+
+- Le bouton « Contacter un agent » est présent sur tout le site public.
+- Page Assistance : https://valexboutique.store/#/assistance
+- Page Aide : https://valexboutique.store/#/aide

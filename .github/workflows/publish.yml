@@ -1,0 +1,66 @@
+name: Publish
+
+# Publication du site depuis ce depot public uniquement.
+# Lancement manuel. Le controle anti-secrets est bloquant.
+# Secrets requis dans GitHub Actions :
+#   CLOUDFLARE_API_TOKEN ou CLOUDLAIRE_JETON_API (Workers Scripts:Edit)
+#   CLOUDFLARE_ACCOUNT_ID (compte qui heberge valexboutique.store)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Ecrire PUBLIER pour confirmer la publication"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-valex
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: inputs.confirm == 'PUBLIER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Controle anti-secrets, CSP et syntaxe
+        run: node scripts/check-site.mjs site
+
+      - name: Verifier la presence des secrets
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDLAIRE_JETON_API }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -eu
+          [ -n "$CF_TOKEN" ] || { echo "Jeton Cloudflare absent : publication refusee."; exit 1; }
+          [ -n "$CF_ACCOUNT" ] || { echo "CLOUDFLARE_ACCOUNT_ID absent : publication refusee."; exit 1; }
+          echo "secrets presents (valeurs non affichees)"
+
+      - name: Installer Wrangler
+        run: npm install --no-audit --no-fund
+
+      - name: Verification a blanc de la configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDLAIRE_JETON_API }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
+        run: npx wrangler deploy --dry-run
+
+      - name: Publier le Worker et les assets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDLAIRE_JETON_API }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
+        run: npx wrangler deploy
