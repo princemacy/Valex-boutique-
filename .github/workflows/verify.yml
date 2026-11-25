@@ -1,7 +1,16 @@
 name: Verify
 
-# Controle du depot public sans publication.
-# Aucun secret n'est necessaire.
+# Verification du depot public. Aucune publication ici.
+#
+# Le deploiement de production est assure par Cloudflare Workers Builds,
+# relie au depot public `princemacy/Valex-boutique-` et a la branche `main`.
+# Les pushes sur une branche de travail et les pull requests ne deploient pas.
+#
+# Aucun secret Cloudflare n'est necessaire dans GitHub Actions. Ne copiez
+# jamais un secret du depot prive vers ce depot public.
+#
+# Ce workflow execute les controles bloquants : anti-secrets, hash CSP,
+# syntaxe, tests unitaires et verification a blanc de Wrangler.
 
 on:
   push:
@@ -15,8 +24,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
+    name: verify
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -27,14 +41,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
 
-      - name: Controle anti-secrets, CSP et syntaxe
-        run: node scripts/check-site.mjs site
+      - name: Installer les dependances verrouillees
+        run: npm ci --no-audit --no-fund
 
-      - name: Installer Wrangler
-        run: npm install --no-audit --no-fund
+      - name: Anti-secrets, CSP et syntaxe
+        run: npm run check
+
+      - name: Tests unitaires
+        run: npm test
 
       - name: Verification a blanc de la configuration Workers
         env:
           WRANGLER_SEND_METRICS: "false"
-        run: npx wrangler deploy --dry-run
+        run: npm run dry-run

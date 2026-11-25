@@ -6,6 +6,7 @@
   "description": "Site public VAlex Boutique, deploye sur Cloudflare Workers Static Assets",
   "scripts": {
     "check": "node scripts/check-site.mjs site",
+    "test": "node --test tests/site.test.mjs",
     "dry-run": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy"
   },

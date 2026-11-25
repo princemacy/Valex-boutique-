@@ -58,27 +58,32 @@ sécurité n'a été désactivée.
 
 ## Publication
 
-Le workflow `.github/workflows/publish.yml` publie uniquement depuis ce dépôt
-public, sur lancement manuel. Les secrets sont stockés dans GitHub Actions
-Secrets, jamais dans le code :
+Le déploiement de production est assuré par **Cloudflare Workers Builds**,
+relié au dépôt public `princemacy/Valex-boutique-` et à la branche `main`.
+Après un merge ou un push sur `main`, Cloudflare construit et déploie le
+Worker `valexboutique`. Les branches de travail et les pull requests ne
+déploient jamais la production.
 
-- `CLOUDFLARE_API_TOKEN` ou `CLOUDFLAIRE_JETON_API` : jeton limité au compte
-  cible, avec les droits Workers Scripts.
-- `CLOUDFLARE_ACCOUNT_ID` : compte qui héberge `valexboutique.store`.
+Le workflow `.github/workflows/verify.yml` ne publie pas. Il vérifie :
 
-Le workflow exécute `scripts/check-site.mjs` avant toute publication. Ce
-contrôle refuse la publication en cas de secret détecté, de hash CSP périmé ou
-de syntaxe JavaScript invalide. Il exécute ensuite `wrangler deploy --dry-run`
-puis `wrangler deploy`.
+- `npm run check` : aucun secret, hash CSP synchronisé, syntaxe ;
+- `npm test` : tests unitaires ;
+- `npm run dry-run` : configuration Workers à blanc.
 
-Commande locale équivalente :
+Aucun secret Cloudflare n'est stocké dans GitHub Actions pour ce dépôt public.
+Ne copiez jamais un secret du dépôt privé. Le jeton de build Workers est géré
+côté Cloudflare.
+
+Commandes locales équivalentes :
 
 ```bash
-npm install
+npm ci
 npm run check
+npm test
 npm run dry-run
-npm run deploy
 ```
+
+Voir `DEPLOYMENT.md` pour la vérification et le retour arrière.
 
 ## Sécurité
 
@@ -86,8 +91,9 @@ npm run deploy
   MonCash, NatCash ou Kobara dans le dépôt.
 - Seule la clé publique Supabase (`sb_publishable_...`) est présente. Elle est
   prévue pour être visible et soumise aux politiques RLS.
-- Les secrets de production restent dans GitHub Actions Secrets, Cloudflare
-  Secrets et Supabase Vault.
+- Les secrets de production restent dans Cloudflare (jeton de build
+  Workers), Supabase Vault et les champs sécurisés des fournisseurs. Aucun
+  secret Cloudflare n'est stocké dans GitHub Actions pour ce dépôt public.
 - Les fonctions d'administration sont protégées côté serveur par
   l'authentification Supabase et les politiques RLS. Leur code client est
   présent pour la parité fonctionnelle, sans donnée privée ni secret.
