@@ -186,7 +186,11 @@ test("le durcissement finance applique est documente et limite la lecture", () =
 test("le rollback finance est archive avec un avertissement explicite", () => {
   const sql = repoFile("sql/archive/finance_rls_rollback_2026-11-25.sql");
   assert.match(sql, /NON APPLIQUEE/);
-  assert.match(sql, /etat moins sur/);
+  assert.match(sql, /rollback est PARTIEL/);
+  assert.match(sql, /RLS reste active/);
+  assert.match(sql, /les GRANT seuls ne/);
+  assert.match(sql, /aucune ligne lisible/);
+  assert.match(sql, /pg_policies/);
   assert.match(sql, /autorisation explicite/);
   assert.match(sql, /DROP POLICY IF EXISTS fee_config_owner_aal2_select/);
   assert.match(sql, /GRANT SELECT ON TABLE public\.fee_config TO anon, authenticated/);

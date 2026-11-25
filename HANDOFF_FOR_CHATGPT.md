@@ -148,10 +148,12 @@ Preuves observees :
 - `public.is_owner()` = `has_role(['admin','owner']) AND current_aal()='aal2'`.
 
 Le rollback finance est archive dans
-`sql/archive/finance_rls_rollback_2026-11-25.sql`. Il n'est pas recommande :
-il redonne des lectures directes et supprime la politique AAL2. Il ne doit
-etre execute qu'en cas de panne confirmee, avec sauvegarde et autorisation
-explicite.
+`sql/archive/finance_rls_rollback_2026-11-25.sql`. Il est PARTIEL et non
+recommande : il restaure les GRANT SELECT et supprime la politique AAL2, mais
+ne recree pas la politique anterieure. RLS restant actif sur `fee_config`,
+les GRANT seuls ne rendent aucune ligne lisible via Data API. Pour un retour
+fonctionnel, restaurer la definition exacte de la politique precedente depuis
+une sauvegarde, avec autorisation explicite.
 
 ## 6. Commandes executees et resultats
 
@@ -239,6 +241,10 @@ mises a jour avant la suppression de Node.js 20 sur les runners.
     account ». La correction demande l'acces proprietaire au compte Cloudflare
     VAlex. Ne pas rendre ce check obligatoire avant reparation, sinon les
     pull requests resteront bloquees.
+11. **Rollback finance partiel** : le fichier archive restaure les GRANT mais
+    aucune politique SELECT. RLS restant actif, il ne rétablit pas la lecture.
+    Une restauration complete exige la definition de la politique anterieure,
+    disponible seulement dans une sauvegarde.
 
 ## 9. Taches restantes recommandees
 
