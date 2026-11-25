@@ -10,6 +10,7 @@ n'applique aucune migration en production.
 - Branche : `fix/valex-p0-p3-20261124`
 - Base : `44bea72` (`main` au moment du travail)
 - Cible de revue : `main`
+- Pull request DRAFT : `https://github.com/princemacy/Valex-boutique-/pull/1`
 - Site concerne : `https://valexboutique.store`
 
 ## 2. Commits de la branche
@@ -142,7 +143,8 @@ Attendu : `shop_id` et `shop_name` presents, aucune erreur pour le role
 
 - Deploiement de production : NOT DONE, volontairement.
 - Merge vers `main` : NOT DONE, volontairement.
-- Push de la branche et PR DRAFT : voir le rapport final et l'URL de la PR.
+- Push de la branche et PR DRAFT : effectues. PR :
+  `https://github.com/princemacy/Valex-boutique-/pull/1`.
 - Workers Builds est relie au depot public et a `main`. Un push sur une branche
   ou une PR non fusionnee ne deploie pas.
 - GitHub Actions ne deploie pas et ne demande aucun secret Cloudflare.
