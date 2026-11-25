@@ -169,9 +169,9 @@ Toutes les commandes de verification locale sont executees dans
 | `git diff --check` | PASS | aucune erreur d'espace |
 | Scan de secrets dans l'arbre | PASS | aucun jeton ; seules les mentions du role `service_role` |
 | `gh secret list` sur le depot public | PASS | 0 secret GitHub Actions |
-| Check-run Verify sur la branche | PASS | `verify` en `success` |
-| Check-run Workers Builds sur la branche | FAIL | echec observe avant `previews_enabled=false` ; a reverifier apres le nouveau push |
-| Site public apres push de la branche | PASS | production inchangee, aucun deploiement de branche |
+| Check-run Verify sur la branche | PASS | `verify` en `success` ; 1 avertissement Node.js 20 (actions/checkout@v4 et setup-node@v4) |
+| Check-run Workers Builds sur la branche | FAIL | `Preview creation failed: This Worker does not exist on your account`, build `86b26e65-fa89-41b4-8d39-9629ce1841ee` |
+| Site public apres push de la branche | PASS | hash CSP `sha256-UKNOT...` et prix HTG conserves, production inchangee |
 | Protection de `main` | Observation | branche non protegee au moment du controle |
 
 ## 7. Deploiement
@@ -187,15 +187,31 @@ Toutes les commandes de verification locale sont executees dans
 
 ### Workers Builds sur la branche
 
-Le dernier check observe avant la desactivation des previews echouait
-immediatement, en moins d'une seconde, sans deploiement GitHub cree. Le build
-concerne est `70daa653-4fb3-43a6-8636-07c909a8c015`, declenche le 25 novembre
-2026 a 11:18:58. Il est anterieur a la desactivation des previews.
+Malgre la desactivation des previews, le check-run `Workers Builds:
+valexboutique` echoue encore sur un push de branche. Le message public est
+explicite :
 
-Le nouveau push de cette passe doit permettre de verifier si le correctif est
-effectif. Tant que le check reste rouge, la cause exacte reste `BLOCKED` :
-la session Cloudflare disponible n'a pas acces au compte
-`19c96ea9b10d531ca3677e7bd3ee92a1`.
+```text
+Preview creation failed: This Worker does not exist on your account.
+Build ID: 86b26e65-fa89-41b4-8d39-9629ce1841ee
+```
+
+Le build est visible dans le compte Cloudflare
+`19c96ea9b10d531ca3677e7bd3ee92a1`, service `valexboutique`, mais l'integration
+ne retrouve pas le Worker sur le compte connecte. Aucun deploiement de
+production n'est cree par ce push. Le site public conserve l'ancien hash CSP
+`sha256-UKNOT...` et des prix HTG, ce qui confirme que la production n'a pas
+change.
+
+La correction est donc cote Cloudflare : verifier le compte et le Worker
+associes a l'integration Workers Builds, ou retablir le Worker attendu. Cette
+action demande l'acces proprietaire au compte Cloudflare VAlex ; elle reste
+`BLOCKED` pour l'agent.
+
+Le check `verify` de GitHub Actions passe sur le meme SHA, avec un unique
+avertissement : Node.js 20 est deprecie pour `actions/checkout@v4` et
+`actions/setup-node@v4`. Ce n'est pas un echec, mais les actions devront etre
+mises a jour avant la suppression de Node.js 20 sur les runners.
 
 ## 8. Risques et points ouverts
 
@@ -218,9 +234,11 @@ la session Cloudflare disponible n'a pas acces au compte
    controle. Ajouter les checks requis est recommande avant merge.
 9. **`HTG` dans le JSON-LD** : `priceCurrency` reste `HTG` pour les moteurs de
    recherche, alors que l'interface est en GDS. Decision a confirmer.
-10. **Workers Builds sur les branches** : check rouge observe avant la
-    desactivation des previews. Reverifier sur le nouveau SHA ; si l'echec
-    persiste, analyser les reglages Workers Builds avant merge.
+10. **Workers Builds sur les branches** : echec confirme apres desactivation
+    des previews, avec le message « This Worker does not exist on your
+    account ». La correction demande l'acces proprietaire au compte Cloudflare
+    VAlex. Ne pas rendre ce check obligatoire avant reparation, sinon les
+    pull requests resteront bloquees.
 
 ## 9. Taches restantes recommandees
 
@@ -233,10 +251,13 @@ la session Cloudflare disponible n'a pas acces au compte
    nom de boutique, puis la desactiver.
 5. Tester la page proprietaire avec une session MFA AAL2 et verifier que
    `fee_config` se charge, puis que `anon` ne peut pas le lire.
-6. Proteger `main` avec les checks requis `verify` et `Workers Builds`.
-7. Faire tourner les cles Brevo compromises.
-8. Decider du rendu compact ou aere et du traitement de `HTG` dans le JSON-LD.
-9. Merge et deploiement par le proprietaire, apres validation de la PR.
+6. Reparer l'integration Workers Builds (compte/Worker associe), puis proteger
+   `main` avec les checks requis `verify` et `Workers Builds`.
+7. Mettre a jour `actions/checkout` et `actions/setup-node` pour retirer
+   l'avertissement Node.js 20.
+8. Faire tourner les cles Brevo compromises.
+9. Decider du rendu compact ou aere et du traitement de `HTG` dans le JSON-LD.
+10. Merge et deploiement par le proprietaire, apres validation de la PR.
 
 ## 10. Regles a conserver
 
