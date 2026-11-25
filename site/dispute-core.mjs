@@ -87,7 +87,7 @@ function isoDate(value) {
 function money(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 0) return "—";
-  return `${Math.floor(n / 100)},${String(n % 100).padStart(2, "0")} HTG`;
+  return `${Math.floor(n / 100)},${String(n % 100).padStart(2, "0")} GDS`;
 }
 
 export function disputeStatusLabel(status) {

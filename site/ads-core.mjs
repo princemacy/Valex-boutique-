@@ -1,10 +1,11 @@
 // VAlex - logique pure des publicites.
 // Aucun acces reseau, aucun contenu invente.
 //
-// Regles du contrat p48 :
-//   - exactement 10 emplacements : 1 et 2 pour VAlex, 3 a 10 payants ;
-//   - files Premium et standard, priorite stricte au Premium cote serveur ;
-//   - un emplacement payant vide n'affiche aucune fausse annonce ;
+// Regles du contrat public :
+//   - seules les campagnes payantes reellement actives et approuvees sont
+//     affichees, avec le nom reel de la boutique ;
+//   - aucun emplacement VAlex, aucun titre de remplacement, aucune annonce
+//     fabriquee a partir d'un emplacement vide ;
 //   - le prix affiche est un apercu : le serveur recalcule toujours.
 
 export const AD_SLOT_COUNT = 10;
@@ -68,42 +69,33 @@ export function isSafeImagePath(value) {
 function normalizeRow(row) {
   if (!row || typeof row !== "object") return null;
   const slotNo = Number(row.slot_no);
-  if (!Number.isInteger(slotNo) || slotNo < 1 || slotNo > AD_SLOT_COUNT) {
+  // Seuls les emplacements payants 3 a 10 existent cote public.
+  if (!Number.isInteger(slotNo) || slotNo < 3 || slotNo > AD_SLOT_COUNT) {
     return null;
   }
-  const kind = VALEX_SLOTS.includes(slotNo) ? "valex" : "paid";
-  if (row.kind !== kind) return null;
+  if (row.kind !== "paid") return null;
 
   const title = cleanText(row.title, MAX_TITLE);
+  if (!title) return null;
+  const shopName = cleanText(row.shop_name, 120);
+  // Une campagne sans boutique reelle n'est pas affichable.
+  if (!shopName) return null;
   const targetUrl = isSafeInternalUrl(row.target_url)
     ? cleanText(row.target_url, MAX_URL)
-    : "/";
+    : null;
   const imagePath = isSafeImagePath(row.image_path)
     ? cleanText(row.image_path, MAX_IMAGE)
     : null;
 
-  if (kind === "valex") {
-    return {
-      slotNo,
-      kind,
-      active: true,
-      title: title || "Annonce VAlex",
-      targetUrl,
-      imagePath,
-      tier: null,
-      remainingSeconds: null,
-    };
-  }
-
-  if (!title) return null;
   const tier = AD_TIERS.includes(row.tier) ? row.tier : null;
   if (!tier) return null;
   const remaining = Number(row.remaining_seconds);
   return {
     slotNo,
-    kind,
+    kind: "paid",
     active: true,
     title,
+    shopName,
     targetUrl,
     imagePath,
     tier,
@@ -113,7 +105,7 @@ function normalizeRow(row) {
   };
 }
 
-// Transforme les lignes de `ad_home` en 10 emplacements deterministes.
+// Transforme les lignes de `ad_home` en emplacements payants deterministes.
 // Les doublons et les lignes incoherentes sont ignores, pas corriges.
 export function normalizeAdRows(rows) {
   const bySlot = new Map();
@@ -122,32 +114,16 @@ export function normalizeAdRows(rows) {
     if (!slot || bySlot.has(slot.slotNo)) continue;
     bySlot.set(slot.slotNo, slot);
   }
-  return Array.from({ length: AD_SLOT_COUNT }, (_, index) => {
-    const slotNo = index + 1;
-    return bySlot.get(slotNo) ?? {
-      slotNo,
-      kind: VALEX_SLOTS.includes(slotNo) ? "valex" : "paid",
-      active: false,
-      title: null,
-      targetUrl: null,
-      imagePath: null,
-      tier: null,
-      remainingSeconds: null,
-    };
-  });
+  return Array.from(bySlot.values()).sort((a, b) => a.slotNo - b.slotNo);
 }
 
-// Prepare l'affichage : VAlex toujours en tete, annonces payantes actives
-// seulement. Aucun emplacement payant vide n'est rendu.
+// Prepare l'affichage : uniquement les annonces payantes actives.
+// Aucun emplacement vide n'est rendu et aucune annonce n'est inventee.
 export function buildAdDisplay(rows) {
-  const slots = normalizeAdRows(rows);
-  const valex = slots.filter((s) => s.kind === "valex" && s.active);
-  const paid = slots.filter((s) => s.kind === "paid" && s.active);
+  const paid = normalizeAdRows(rows);
   return {
-    slots,
-    valex,
     paid,
-    filled: valex.length + paid.length,
+    filled: paid.length,
     total: AD_SLOT_COUNT,
   };
 }
@@ -197,7 +173,7 @@ export function validateCampaignInput({
 export function formatCents(cents) {
   const value = Number(cents);
   if (!Number.isFinite(value) || value < 0) return "—";
-  return `${Math.floor(value / 100)},${String(value % 100).padStart(2, "0")} HTG`;
+  return `${Math.floor(value / 100)},${String(value % 100).padStart(2, "0")} GDS`;
 }
 
 // Durees proposees, dans l'ordre lisible pour un vendeur.

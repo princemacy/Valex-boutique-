@@ -223,6 +223,9 @@ p{margin:0}
 @keyframes shimmer{to{background-position:-200% 0}}
 .sk-card{height:230px;border-radius:var(--r-m)}
 .sk-line{height:13px;margin-top:8px}
+.loadslow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid #F3C9A8;border-radius:12px;background:#FFF7F0;color:#7A3A00;font-size:13px;font-weight:600}
+.loadslow button{border:0;border-radius:10px;background:#FF6A00;color:#fff;font-weight:800;font-size:13px;padding:8px 12px;cursor:pointer}
+.loadslow button:focus-visible{outline:2px solid #111;outline-offset:2px}
 
 .gal{border-radius:var(--r-m);overflow:hidden;background:var(--card);border:1px solid var(--line)}
 .gal__main{aspect-ratio:1;background:var(--sunk);display:grid;place-items:center;color:var(--ink-4)}
@@ -385,9 +388,22 @@ p{margin:0}
 .modal__box h3{font-size:18px;padding:19px 20px 0}
 .modal__box .body{padding:9px 20px 4px;font-size:14px;color:var(--ink-2);line-height:1.6}
 .modal__box .foot{padding:16px 20px 20px;display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
-.toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + 16px + env(safe-area-inset-bottom,0px));z-index:100;transform:translate(-50%,190%);background:var(--ink);color:#fff;padding:11px 17px;border-radius:var(--r-full);font-size:14px;font-weight:500;box-shadow:var(--sh-3);max-width:calc(100vw - 32px);display:flex;align-items:center;gap:9px;transition:transform .48s var(--ease-back)}
+.toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + 16px + env(safe-area-inset-bottom,0px));z-index:100;transform:translate(-50%,190%);background:var(--ink);color:#fff;padding:11px 17px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--sh-3);max-width:calc(100vw - 32px);display:flex;align-items:center;gap:9px;transition:transform .48s var(--ease-back)}
 .toast.on{transform:translate(-50%,0)}
 .toast .ic{width:17px;height:17px;flex:0 0 auto;color:var(--mango)}
+
+/* --- PWA : banniere d'installation et etat hors ligne --- */
+.installbar{position:fixed;left:10px;right:10px;bottom:calc(var(--tab-h) + 10px + env(safe-area-inset-bottom,0px));z-index:96;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh-3);padding:10px 12px;max-width:440px;margin:0 auto}
+.installbar__ic{width:38px;height:38px;border-radius:10px;flex:0 0 auto;object-fit:cover}
+.installbar__b{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.installbar__b strong{font-size:14px}
+.installbar__b span{font-size:12.5px;color:var(--ink-2);overflow-wrap:anywhere}
+.installbar__go{flex:0 0 auto;border:0;background:var(--mango);color:#fff;font-weight:800;font-size:13px;padding:9px 13px;border-radius:10px;cursor:pointer}
+.installbar__x{flex:0 0 auto;border:0;background:none;color:var(--ink-2);font-size:12.5px;font-weight:700;padding:6px;cursor:pointer}
+.offlinebar{position:fixed;left:0;right:0;top:0;z-index:130;background:#111;color:#fff;text-align:center;font-size:12.5px;font-weight:700;padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px;letter-spacing:.02em}
+.offlinebar[hidden]{display:none}
+.gsibox{display:flex;justify-content:center;min-height:44px;margin:0 0 2px}
+.gsibox[hidden]{display:none}
 
 /* bandeau d'état de connexion */
 .netbar{padding:9px 14px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px;background:var(--red-soft);color:var(--red)}
@@ -720,19 +736,10 @@ body{background:#fff}
 .card__h .more{font-size:13px;color:var(--ink-3)}
 /* publicites */
 .adzone{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}
-.adzone__head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 2px 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
-.adzone__count{text-transform:none;letter-spacing:0;font-size:11px;color:var(--ink-4)}
 .adrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .adrow+.adrow{margin-top:10px}
 .adrow::-webkit-scrollbar{display:none}
-.adcard{flex:0 0 auto;width:210px;min-height:92px;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#111,#333)}
-.adrow--valex .adcard{background:linear-gradient(135deg,#0B5D45,#128A67)}
-.adrow--paid .adcard{background:linear-gradient(135deg,#191919,#3a2a1a)}
-.adcard__head{display:flex;align-items:center;gap:6px}
-.adbadge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.16)}
-.adbadge--valex{background:#fff;color:#0B5D45}
-.adbadge--premium{background:#FFB300;color:#111}
-.adcard__left{font-size:10px;opacity:.8;margin-left:auto}
+.adcard{flex:0 0 auto;width:210px;min-height:92px;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#191919,#3a2a1a)}
 .adcard__img{width:100%;height:74px;object-fit:cover;border-radius:6px;margin:2px 0;background:rgba(255,255,255,.12)}
 .adcard__title{font-size:13.5px;line-height:1.25;font-family:var(--ff-d);color:#fff}
 .adcard__note{font-size:10.5px;opacity:.72;color:#fff}
@@ -1023,6 +1030,12 @@ body.kb .shell{padding-bottom:0}
 .plan>b{display:block;font-family:var(--ff-d);font-size:24px;font-weight:800;margin:2px 0}.plan>b small{font-size:13px;font-weight:600;color:var(--ink-3)}
 .plan p{font-size:13.5px;line-height:1.55;color:var(--ink-2);margin-top:8px}
 .plan--pro{border:2px solid #FF6A00}.plan--pro strong{color:#FF6A00}
+.ptable{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 2px;table-layout:fixed}
+.ptable th,.ptable td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.ptable th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:700}
+.ptable td:last-child,.ptable th:last-child{text-align:right}
+.ptable tr:last-child td{border-bottom:0}
+.prosum{font-size:14px;margin:8px 0 12px;color:var(--ink-2)}
 .howsteps{padding-left:18px;font-size:13.5px;line-height:1.55;margin:6px 0 12px}.howsteps li{margin-bottom:5px}
 /* Connexion */
 .authbox{max-width:420px;margin:0 auto;padding-top:6px}
@@ -1604,7 +1617,7 @@ function unError(v){
   return '';
 }
 const rpcMissing=e=>!!e&&(e.code==='PGRST202'||/could not find the function|schema cache/i.test(String(e.message||'')));
-/* Les prix sont stockés en centimes de gourde. Aucun calcul en
+/* Les prix sont stockés en centimes. L'affichage public est en GDS. Aucun calcul en
    virgule flottante ne touche jamais de l'argent. */
 const toCents=v=>Math.round(Number(String(v).replace(',','.'))*100)||0;
 const fromCents=c=>(Number(c)||0)/100;
@@ -1641,9 +1654,21 @@ function flashSaved(sel,l){const b=$(sel);if(!b)return;const o=b.innerHTML;b.inn
    silence : c'est la règle la plus utile quand on débogue
    depuis un téléphone. */
 function fail(err,ctx){
-  console.error(ctx||'', err);
-  const msg=(err&&(err.message||err.error_description))||'Erreur inconnue';
-  toast((ctx?ctx+' : ':'')+msg);
+  const id='VX-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  try{
+    const raw=String((err&&(err.message||err.error_description))||'');
+    const safe=raw.replace(/(eyJ[A-Za-z0-9_-]{10,}\.?[A-Za-z0-9_-]*|sb_(?:secret|publishable)_[A-Za-z0-9_-]+|Bearer\s+\S+|postgres(?:ql)?:\/\/\S+|service_'+'role)/gi,'[masque]').slice(0,240);
+    console.error('[VAlex]',id,(ctx||'erreur'),(err&&(err.code||err.status))||'',safe);
+  }catch(e){}
+  const raw=String((err&&(err.message||err.error_description))||'');
+  let msg='Une erreur est survenue. Réessayez dans un instant.';
+  if(/invalid login credentials/i.test(raw))msg='Email ou mot de passe incorrect.';
+  else if(/email not confirmed/i.test(raw))msg='Confirmez votre email avant de vous connecter.';
+  else if(/rate limit|too many/i.test(raw))msg='Trop de tentatives. Réessayez dans quelques minutes.';
+  else if(/failed to fetch|network|load failed|offline/i.test(raw))msg='Connexion difficile. Vérifiez internet et réessayez.';
+  else if(/duplicate key|unique constraint/i.test(raw))msg='Cette information existe déjà.';
+  else if(/row-level security|permission denied/i.test(raw))msg='Cette action n\'est pas autorisée pour ce compte.';
+  toast(msg+' Code '+id+'.');
   return null;
 }
 
@@ -2115,7 +2140,7 @@ function statCardHtml(label,value,note){
 
 /* ---------- Publicités : tarifs et libellés ---------- */
 const AD_RATES=[[1,'1 heure',5000],[24,'24 heures',100000],[168,'7 jours',500000],[720,'30 jours',1500000],[2160,'90 jours',3500000]];
-function adFmtCents(c){ return new Intl.NumberFormat('fr-FR').format(Math.floor(Number(c)/100))+' HTG'; }
+function adFmtCents(c){ return new Intl.NumberFormat('fr-FR').format(Math.floor(Number(c)/100))+' GDS'; }
 function adQuoteLocal(tier,hours){
   const row=AD_RATES.find(r=>r[0]===Number(hours));
   if(!row)return 0;
@@ -2167,7 +2192,35 @@ function supportBadgeClass(status){
 }
 
 const V={
-  set(h){$('#view').innerHTML=h;},
+  set(h){
+    const v=$('#view'); if(!v)return;
+    v.innerHTML=h;
+    if(V._skTimer){clearTimeout(V._skTimer);V._skTimer=null;}
+    const seq=(V._skSeq=(V._skSeq||0)+1);
+    const pending=()=>{
+      const vv=$('#view'); if(!vv)return false;
+      return [...vv.querySelectorAll('.sk, #feedL > .feed__item > .spin')]
+        .some(el=>el.getClientRects().length>0);
+    };
+    if(pending()){
+      V._skTimer=setTimeout(()=>{
+        if(seq!==V._skSeq)return;
+        const vv=$('#view'); if(!vv||vv.querySelector('.loadslow'))return;
+        if(!pending())return;
+        const bar=document.createElement('div');
+        bar.className='loadslow';
+        bar.setAttribute('role','status');
+        const txt=document.createElement('span');
+        txt.textContent='Le chargement prend plus de temps que prévu.';
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.textContent='Réessayer';
+        btn.addEventListener('click',()=>{bar.remove();route();});
+        bar.append(txt,btn);
+        vv.prepend(bar);
+      },12000);
+    }
+  },
 
   async home(){
     topbar('public');
@@ -2856,7 +2909,7 @@ const V={
         '<div class="row2"><div class="field"><label for="pAge">Âge (enfants)</label><select id="pAge"><option value="">—</option>'+AGES.map(([k,l])=>'<option value="'+k+'"'+(k===d.age_group?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
         '<div class="field"><label for="pKg">Fille ou garçon</label><select id="pKg"><option value="">—</option>'+[['fille','Fille'],['garcon','Garçon'],['mixte','Les deux']].map(([k,l])=>'<option value="'+k+'"'+(k===d.kid_gender?' selected':'')+'>'+l+'</option>').join('')+'</select></div></div>'+
         '<label class="check" style="margin-bottom:6px"><input type="checkbox" id="pPlus"'+(d.plus_size?' checked':'')+'> <span>Existe en grande taille</span></label></details>'+
-        '<div class="row2"><div class="field"><label for="pP">Prix en HTG <span class="req">*</span></label>'+
+        '<div class="row2"><div class="field"><label for="pP">Prix en GDS <span class="req">*</span></label>'+
         '<input type="number" id="pP" min="0" step="25" value="'+esc(d.price)+'" inputmode="decimal" placeholder="2500"><div class="err">Prix supérieur à zéro.</div></div>'+
         '<div class="field"><label>Prix barré</label><div class="hint" style="margin-top:4px">Automatique : il apparaît si vous baissez votre prix, une seule fois, après 7 jours au prix d\'origine.</div></div></div>'+
         '<div class="field" style="margin-bottom:0"><label for="pD">Description</label>'+
@@ -2890,7 +2943,7 @@ const V={
           (d.vars.length>1?'<button class="vrow__x" data-rm="'+attr(i)+'" aria-label="Retirer">×</button>':'<span></span>')+
         '</div>':'')+
         '<div class="vrow__num">'+
-        '<div class="field"><label for="v'+i+'_price">Prix HTG</label>'+
+        '<div class="field"><label for="v'+i+'_price">Prix GDS</label>'+
         '<input type="number" id="v'+i+'_price" min="0" step="25" value="'+esc(v.price)+'" inputmode="decimal"></div>'+
         '<div class="field"><label for="v'+i+'_stock">Quantité</label>'+
         '<input type="number" id="v'+i+'_stock" min="0" step="1" value="'+esc(v.stock)+'" inputmode="numeric"></div></div>'+
@@ -3106,7 +3159,7 @@ const V={
         '<label class="pick '+(v.mode===x?'on':'')+'"><input type="radio" name="dm" value="'+x+'"'+(v.mode===x?' checked':'')+'>'+
         '<span><strong>'+t+'</strong><span>'+s+'</span></span></label>').join('')+'</div>'+
       '<div class="row2" style="margin-top:16px">'+
-      '<div class="field"><label for="dF">Frais habituels en HTG</label><input type="number" id="dF" min="0" step="25" value="'+fromCents(v.fee_cents)+'" inputmode="decimal"></div>'+
+      '<div class="field"><label for="dF">Frais habituels en GDS</label><input type="number" id="dF" min="0" step="25" value="'+fromCents(v.fee_cents)+'" inputmode="decimal"></div>'+
       '<div class="field"><label for="dD">Délai annoncé</label><select id="dD">'+DELAYS.map(x=>'<option'+(x===v.delay_label?' selected':'')+'>'+x+'</option>').join('')+'</select></div></div>'+
       '<div class="field"><label for="dZ">Zones desservies</label><input type="text" id="dZ" value="'+esc(v.zones||'')+'" placeholder="Cap-Haïtien, Limbé, Milot"></div>'+
       '<label class="check"><input type="checkbox" id="dP"'+(v.allows_pickup?' checked':'')+'> <span>J\'accepte aussi le retrait sur place</span></label></div>'+
@@ -3508,6 +3561,14 @@ const EVENT_LABEL={pending:'Commande passée',confirm:'Acceptée par le vendeur'
   received:'Réception confirmée par le client',paid:'Paiement reçu par le vendeur',cancel:'Annulée'};
 const fdt=d=>new Date(d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 const RAYON_IMG=slug=>IMG['r_'+slug]||null;
+/* Vignette neutre propre a un rayon ou une sous-categorie : une initiale sur
+   fond clair, jamais la photo d'un autre rayon. Deterministe, sans produit
+   invente et sans image cassee. */
+const neutralTile=label=>{
+  const t=String(label||'').trim(), ch=(t?t.charAt(0):'?').toUpperCase()
+    .replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+  return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#F4F1EC"/><text x="32" y="41" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="26" font-weight="700" fill="#8A8177">'+ch+'</text></svg>');
+};
 
 async function shareLink(title,url){
   if(navigator.share){ try{ await navigator.share({title:title,text:title,url:url}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
@@ -3658,7 +3719,7 @@ Object.assign(V,{
     }
     list=[...list.filter(p=>p.video_path&&!p.is_demo),...list.filter(p=>!p.video_path&&!p.is_demo),...list.filter(p=>p.is_demo)];
     if(startId){const i=list.findIndex(p=>p.id===startId); if(i>0)list=[list[i],...list.slice(0,i),...list.slice(i+1)];}
-    if(!list.length){ $('#feedL').innerHTML='<div class="feed__empty"><h3>Rien à regarder pour l\'instant</h3><p>Les premiers produits arrivent.</p></div>'; return; }
+    if(!list.length){ $('#feedL').innerHTML='<div class="feed__empty"><h3>Aucune vidéo disponible</h3><p>Les vidéos des vendeurs apparaîtront ici dès leur publication.</p></div>'; return; }
     let favs=[]; if(S.user){const {data}=await sb.from('favorites').select('product_id').eq('user_id',S.user.id); favs=(data||[]).map(x=>x.product_id);}
     $('#feedL').innerHTML=list.map(p=>{
       const imgs=(p.image_paths||[]).map(prodImg).filter(Boolean);
@@ -4336,15 +4397,15 @@ Object.assign(V,{
     if(aud==='chaussures')list=all.filter(p=>p.rayon_slug==='chaussures');
     else if(aud!=='tous')list=all.filter(p=>p.audience===aud||p.audience==='mixte');
     const real=list.filter(p=>!p.is_demo);
-    const top=(slug)=>{const c=all.filter(p=>p.rayon_slug===slug&&p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];
-      return c?prodImg(c.cover_path):RAYON_IMG(slug);};
+    const top=(slug,label)=>{const c=all.filter(p=>p.rayon_slug===slug&&p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];
+      return c?prodImg(c.cover_path):neutralTile(label);};
     const promo=real.filter(p=>OFF(p)>=5&&p.total_stock).sort((a,b)=>OFF(b)-OFF(a)).slice(0,10);
     const best=real.filter(p=>(p.sold_count||0)>0).sort((a,b)=>b.sold_count-a.sold_count).slice(0,4);
     const vids=real.filter(p=>p.video_path).slice(0,8);
     const shopsMap={}; real.forEach(p=>{const s=shopsMap[p.shop_slug]=shopsMap[p.shop_slug]||{slug:p.shop_slug,name:p.shop_name,logo:p.shop_logo,city:p.shop_city,n:0,sold:0,cover:p.cover_path};s.n++;s.sold+=(p.sold_count||0);});
     const trendShops=Object.values(shopsMap).sort((a,b)=>b.sold-a.sold||b.n-a.n).slice(0,8);
     const ad='<div id="adHome" hidden></div>';
-    const cats='<div class="catgrid enter">'+S.rayons.map(r=>'<a href="#/rayon/'+attr(r.slug)+'"><span class="ci">'+(top(r.slug)?'<img src="'+top(r.slug)+'" alt="" loading="lazy">':ico(RAYON_ICON[r.slug]||'dots'))+'</span><span class="cl">'+esc(r.label)+'</span></a>').join('')+'</div>';
+    const cats='<div class="catgrid enter">'+S.rayons.map(r=>'<a href="#/rayon/'+attr(r.slug)+'"><span class="ci"><img src="'+attr(top(r.slug,r.label))+'" alt="" loading="lazy"></span><span class="cl">'+esc(r.label)+'</span></a>').join('')+'</div>';
     const row=(title,ic,items,more)=>items.length?'<div class="sechead"><h2>'+(ic?ico(ic,2.2):'')+title+'</h2>'+(more?'<a class="more" href="'+attr(more)+'">Voir tout</a>':'')+'</div>'+
       '<div class="hrow">'+items.map((p,i)=>'<a class="mini" href="#/produit/'+attr(p.id)+'"><span class="mini__img"><img src="'+attr(prodImg(p.cover_path))+'" alt="" loading="lazy">'+
         (OFF(p)>=5?'<span class="tg tg--off">−'+OFF(p)+' %</span>':'')+'</span><span class="price">'+gds(PX(p))+'</span>'+
@@ -4389,7 +4450,7 @@ Object.assign(V,{
       '<div class="catmain" id="cmain">'+skeleton(2)+'</div></div>');
     $$('#cside button').forEach(b=>b.onclick=()=>{sessionStorage.setItem('valex_cat',b.dataset.c);this.categories(b.dataset.c);});
     const all=await fetchCatalog({limit:300}); computeRanks(all);
-    const coverOf=(fn,fb)=>{const c=all.filter(fn).filter(p=>p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];return c?prodImg(c.cover_path):fb;};
+    const coverOf=(fn,label)=>{const c=all.filter(fn).filter(p=>p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];return c?prodImg(c.cover_path):neutralTile(label);};
     const hot=slug=>{const n=all.filter(p=>p.category_slug===slug&&!p.is_demo); const s=n.reduce((a,p)=>a+(p.sold_count||0),0);
       return s>=10?'<span class="hot">'+ico('fire',2.2)+'</span>':(n.length>=3?'<span class="hot hot--t">'+ico('trend',2.2)+'</span>':'');};
     const circ=(href,img,label,badge)=>'<a class="circ" href="'+attr(href)+'"><span class="ci">'+(img?'<img src="'+attr(img)+'" alt="" loading="lazy">':'')+(badge||'')+'</span><span>'+esc(label)+'</span></a>';
@@ -4398,13 +4459,13 @@ Object.assign(V,{
       const subs=S.cats.filter(c=>c.parent_id);
       const scored=subs.map(c=>({c,n:all.filter(p=>p.category_slug===c.slug&&!p.is_demo).reduce((a,p)=>a+(p.views||0)+(p.sold_count||0)*20,0)})).sort((a,b)=>b.n-a.n).slice(0,12);
       if(sel==='pour')h='<h3 class="cm-h">Sélection pour vous</h3><div class="circs">'+scored.map(({c})=>{const r=S.subs[c.parent_id]||{};
-        return circ('#/rayon/'+r.slug+'/'+c.slug,coverOf(p=>p.category_slug===c.slug,RAYON_IMG(r.slug)),c.label,hot(c.slug));}).join('')+'</div>';
+        return circ('#/rayon/'+r.slug+'/'+c.slug,coverOf(p=>p.category_slug===c.slug,c.label),c.label,hot(c.slug));}).join('')+'</div>';
       else{ const l=sel==='new'?sortList(all.filter(p=>!p.is_demo),'recent').slice(0,12):sortList(all.filter(p=>!p.is_demo&&p.total_stock),'asc').slice(0,12);
         h='<h3 class="cm-h">'+(sel==='new'?'Nouveautés':'Petits prix')+'</h3>'+(l.length?grid(l):'<p class="t-small">Rien pour l\'instant.</p>'); }
     } else {
       const r=catBySlug(sel);
       h='<h3 class="cm-h">'+esc(r?r.label:'')+'</h3><div class="circs">'+circ('#/rayon/'+sel,'', 'Voir tout','<span class="all">'+ico('grid',1.8)+'</span>')+
-        subsOf(r.id).map(c=>circ('#/rayon/'+sel+'/'+c.slug,coverOf(p=>p.category_slug===c.slug,RAYON_IMG(sel)),c.label,hot(c.slug))).join('')+'</div>';
+        subsOf(r.id).map(c=>circ('#/rayon/'+sel+'/'+c.slug,coverOf(p=>p.category_slug===c.slug,c.label),c.label,hot(c.slug))).join('')+'</div>';
     }
     const sh={}; all.filter(p=>!p.is_demo&&(['pour','new','petits'].includes(sel)||p.rayon_slug===sel)).forEach(p=>{const s=sh[p.shop_slug]=sh[p.shop_slug]||{slug:p.shop_slug,name:p.shop_name,cover:p.cover_path,n:0};s.n++;});
     const ts=Object.values(sh).sort((a,b)=>b.n-a.n).slice(0,6);
@@ -4440,8 +4501,8 @@ Object.assign(V,{
     function sheet(){
       const cities=Object.values(DEPTS).flat().sort();
       ask({title:'Filtres',ok:'Voir les résultats',cancel:'Tout effacer',body:
-        '<div class="row2"><div class="field"><label for="fMin">Prix min (HTG)</label><input type="number" id="fMin" inputmode="numeric" value="'+esc(f.min)+'"></div>'+
-        '<div class="field"><label for="fMax">Prix max (HTG)</label><input type="number" id="fMax" inputmode="numeric" value="'+esc(f.max)+'"></div></div>'+
+        '<div class="row2"><div class="field"><label for="fMin">Prix min (GDS)</label><input type="number" id="fMin" inputmode="numeric" value="'+esc(f.min)+'"></div>'+
+        '<div class="field"><label for="fMax">Prix max (GDS)</label><input type="number" id="fMax" inputmode="numeric" value="'+esc(f.max)+'"></div></div>'+
         '<div class="field"><label for="fAud">Pour qui</label><select id="fAud"><option value="">Tout le monde</option><option value="femme"'+(f.aud==='femme'?' selected':'')+'>Femmes</option><option value="homme"'+(f.aud==='homme'?' selected':'')+'>Hommes</option><option value="enfant"'+(f.aud==='enfant'?' selected':'')+'>Enfants</option></select></div>'+
         '<div class="field"><label for="fCity">Ville du vendeur</label><select id="fCity"><option value="">Toutes</option>'+cities.map(c=>'<option'+(c===f.city?' selected':'')+'>'+c+'</option>').join('')+'</select></div>'+
         '<label class="check"><input type="checkbox" id="fPromo"'+(f.promo?' checked':'')+'> <span>En promotion</span></label>'+
@@ -4716,7 +4777,7 @@ const AUD_RAYONS={femme:['mode','chaussures','sacs','beaute'],homme:['mode','cha
 const AUD_IMG={femme:['r_sacs','r_beaute'],homme:['r_chaussures','r_tech'],enfant:['r_bebe'],grande:[],chaussures:['r_chaussures']};
 
 /* prix façon Shein : le chiffre en grand, la monnaie en petit */
-const bigPrice=c=>{const t=gds(c).replace(/\s*HTG$/,'');return '<span class="bp"><b>'+t+'</b><small>HTG</small></span>';};
+const bigPrice=c=>{const t=gds(c).replace(/\s*GDS$/,'');return '<span class="bp"><b>'+t+'</b><small>GDS</small></span>';};
 
 /* petites infos qui défilent verticalement (une ligne, plusieurs messages) */
 function tickerLines(p){
@@ -4782,12 +4843,20 @@ async function quickAdd(pid,btn){
 
 /* bloc propre à chaque onglet (Femmes, Hommes, Enfants, Grande taille, Chaussures) */
 function audienceBlock(aud,all){
-  const imgs=AUD_IMG[aud]||[];
   const ban='<div id="adHome" hidden></div>';
   let tiles='';
   if(aud==='femme'||aud==='homme'||aud==='grande'){
-    tiles='<div class="occ hrow">'+OCCASIONS.map(([k,l])=>{const c=all.filter(p=>AUD_FILTER[aud](p)&&(p.occasions||[]).includes(k)&&p.cover_path)[0];
-      return '<a href="#/occasion/'+aud+'/'+k+'" class="occ__t"><span class="occ__i">'+(c?'<img src="'+attr(prodImg(c.cover_path))+'" alt="">':(imgs[0]?'<img src="'+IMG[imgs[0]]+'" alt="">':ico('grid')))+'</span><span class="occ__l">'+l+'</span></a>';}).join('')+'</div>';
+    /* Une photo differente par tuile, choisie de facon deterministe. Un
+       produit qui porte plusieurs tags ne peut pas monopoliser le bloc. */
+    const usedIds=new Set(), usedPaths=new Set();
+    tiles='<div class="occ hrow">'+OCCASIONS.map(([k,l])=>{
+      const pool=all.filter(p=>AUD_FILTER[aud](p)&&(p.occasions||[]).includes(k)&&p.cover_path&&!p.is_demo)
+        .sort((a,b)=>(b.sold_count||0)-(a.sold_count||0)||(b.views||0)-(a.views||0)||String(a.id).localeCompare(String(b.id)));
+      const c=pool.find(p=>!usedIds.has(p.id)&&!usedPaths.has(p.cover_path));
+      if(c){usedIds.add(c.id);usedPaths.add(c.cover_path);}
+      const img=c?prodImg(c.cover_path):neutralTile(l);
+      return '<a href="#/occasion/'+aud+'/'+k+'" class="occ__t"><span class="occ__i"><img src="'+attr(img)+'" alt="" loading="lazy"></span><span class="occ__l">'+l+'</span></a>';
+    }).join('')+'</div>';
   }
   let circles='';
   if(aud==='enfant'){
@@ -4796,12 +4865,12 @@ function audienceBlock(aud,all){
                 ['garcon','0-3','Bébés garçons (0-3 ans)'],['garcon','4-7','Garçons (4-7 ans)'],['garcon','8-12','Garçons (8-12 ans)'],['garcon','13-16','Ados garçons (13-16 ans)']];
     const list=age?kids.filter(k=>k[1]===age):kids;
     circles='<div class="agebox enter"><div class="agetabs" id="ages"><button data-g="" class="'+(age?'':'on')+'">Catégorie</button>'+AGES.map(([k,l])=>'<button data-g="'+attr(k)+'" class="'+(age===k?'on':'')+'">'+l+'</button>').join('')+'</div>'+
-      '<div class="circs4">'+list.map(([g,a,l])=>{const c=all.filter(p=>p.kid_gender===g&&p.age_group===a&&p.cover_path)[0];
-        return '<a class="circ" href="#/enfants/'+g+'/'+a+'"><span class="ci">'+(c?'<img src="'+attr(prodImg(c.cover_path))+'" alt="">':'<img src="'+IMG.r_bebe+'" alt="">')+'</span><span>'+l+'</span></a>';}).join('')+'</div></div>';
+      '<div class="circs4">'+list.map(([g,a,l])=>{const c=all.filter(p=>p.kid_gender===g&&p.age_group===a&&p.cover_path&&!p.is_demo).sort((x,y)=>(y.views||0)-(x.views||0))[0];
+        return '<a class="circ" href="#/enfants/'+g+'/'+a+'"><span class="ci">'+(c?'<img src="'+attr(prodImg(c.cover_path))+'" alt="">':'<img src="'+attr(neutralTile(l))+'" alt="">')+'</span><span>'+l+'</span></a>';}).join('')+'</div></div>';
   } else {
     const subs=(AUD_RAYONS[aud]||[]).flatMap(rs=>{const r=catBySlug(rs);return r?subsOf(r.id).map(c=>({c,r})):[];});
-    const cover=(c,r)=>{const x=all.filter(p=>p.category_slug===c.slug&&AUD_FILTER[aud](p)&&p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];return x?prodImg(x.cover_path):RAYON_IMG(r.slug);};
-    circles='<div class="subgrid enter">'+subs.map(({c,r})=>'<a class="circ" href="#/rayon/'+attr(r.slug)+'/'+c.slug+'"><span class="ci ci--sq"><img src="'+attr(cover(c,r)||'')+'" alt="" loading="lazy"></span><span>'+esc(c.label)+'</span></a>').join('')+'</div>';
+    const cover=(c)=>{const x=all.filter(p=>p.category_slug===c.slug&&AUD_FILTER[aud](p)&&p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];return x?prodImg(x.cover_path):neutralTile(c.label);};
+    circles='<div class="subgrid enter">'+subs.map(({c,r})=>'<a class="circ" href="#/rayon/'+attr(r.slug)+'/'+c.slug+'"><span class="ci ci--sq"><img src="'+attr(cover(c))+'\" alt="" loading="lazy"></span><span>'+esc(c.label)+'</span></a>').join('')+'</div>';
   }
   return ban+tiles+circles;
 }
@@ -5295,7 +5364,7 @@ V.prefs=async function(){
   const row=(h,i,l,sub,id)=>'<'+(h?'a href="'+attr(h)+'"':'button'+(id?' id="'+id+'"':''))+' class="lrow">'+ico(i)+'<span>'+l+(sub?'<em>'+sub+'</em>':'')+'</span>'+ico('chev',2)+'</'+(h?'a':'button')+'>';
   this.set('<div class="lcard enter">'+row('','alert','Notifications',notif==='granted'?'Activées sur ce téléphone':notif==='denied'?'Bloquées dans le navigateur':'Touchez pour les activer','nfBtn')+
       row('#/preferences-notifications','bell','Préférences de notifications','Type par type, site et push')+
-      row('','spark','Langue','Français · Kreyòl bientôt','lgBtn')+row('','money','Devise','Gourde (HTG)','cuBtn')+'</div>'+
+      row('','spark','Langue','Français · Kreyòl bientôt','lgBtn')+'</div>'+
     '<div class="lcard enter">'+row('#/aide','help','Aide et service client')+row('/a-propos','help','À propos')+row('/faq','help','FAQ')+row('#/conditions','doc','Conditions')+row('#/confidentialite','lock','Confidentialité')+'</div>'+
     (S.user?'<div class="lcard enter"><button class="lrow" id="outBtn2">'+ico('out')+'<span>Se déconnecter</span></button></div>':'')+
     '<p class="t-small" style="text-align:center;margin-top:16px">VAlex Boutique · version 1.0</p>');
@@ -5316,7 +5385,6 @@ V.prefs=async function(){
     }catch(e){ toast(e&&e.message?e.message:'Notifications indisponibles.'); }
   };
   $('#lgBtn').onclick=()=>toast('Le kreyòl arrive bientôt.');
-  $('#cuBtn').onclick=()=>toast('Les prix sont en gourdes. Le dollar arrive pour la diaspora.');
   const o=$('#outBtn2'); if(o)o.onclick=async ()=>{ if(await ask({title:'Se déconnecter ?',body:'<p>Votre panier reste dans ce téléphone.</p>',ok:'Se déconnecter'})){await sb.auth.signOut();await loadSession();go('#/');toast('À bientôt.');}};
 };
 
@@ -5411,9 +5479,7 @@ Object.assign(I,{
   wallet:'<path d="M3 7a2 2 0 012-2h12a2 2 0 012 2v1H5a2 2 0 00-2 2z"/><rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="16" cy="14" r="1.4"/>'
 });
 
-const PRO={seller:{m:75000,y:750000},buyer:{m:25000,y:250000}};
 const isPro=d=>!!(d&&new Date(d)>new Date());
-const VALEX_PAY='3X XX XX XX'; /* numéro MonCash/NatCash de VAlex : Ulyss le donnera */
 
 /* ---------------------------------------------------------
    1. GRAPHIQUES (SVG fait main, rien à charger)
@@ -5519,7 +5585,6 @@ const HOWTO='<details class="howto"><summary>'+ico('help',2)+'Comment avancent l
   '<p class="t-small">Après 7 jours « Expédiée » sans livraison, le client peut ouvrir un « Problème » : le QG examine.</p></details>';
 
 V.orders=async function(){
-  if(sb)sb.rpc('expire_pending_orders').then(()=>{});
   const t=(location.hash.split('?t=')[1]||'pending');
   this.set('<div class="phead enter"><div class="phead__t"><h1>Commandes</h1><p>Acceptez vite : chaque commande a 24 h pour être acceptée.</p></div></div>'+
     '<div class="otabs otabs--v" id="vot">'+OST.map(([k,i,l])=>'<a href="#/commandes?t='+k+'" class="'+(k===t?'on':'')+'">'+l+'<span id="vc_'+k+'"></span></a>').join('')+'</div>'+HOWTO+
@@ -5627,7 +5692,7 @@ V.stats=async function(){
     '<div><b>'+O+'</b><span>Commandes</span>'+delta(O,p.orders)+'</div>'+
     '<div><b>'+Vw+'</b><span>Vues des produits</span>'+delta(Vw,p.views)+'</div>'+
     '<div><b>'+(Math.round(conv*10)/10+'').replace('.',',')+' %</b><span>Vues → commandes</span></div></div>'+
-    '<div class="card enter"><div class="card__h"><h3>Ventes (HTG)</h3></div><div class="card__b">'+lineChart('rev',ser.map(x=>({x:x.x,y:x.r/100})))+'</div></div>'+
+    '<div class="card enter"><div class="card__h"><h3>Ventes (GDS)</h3></div><div class="card__b">'+lineChart('rev',ser.map(x=>({x:x.x,y:x.r/100})))+'</div></div>'+
     '<div class="card enter"><div class="card__h"><h3>Vues et commandes</h3><span class="legend" style="margin-left:auto"><i style="background:#FF6A00"></i>Vues <i style="background:#111"></i>Commandes ×10</span></div><div class="card__b">'+
       lineChart('vo',ser.map(x=>({x:x.x,v:x.v,o:x.o*10})),{lines:[{k:'v',c:'#FF6A00'},{k:'o',c:'#111',dash:true}]})+'</div></div>'+
     '<div class="card enter"><div class="card__h"><h3>Vos articles les plus vus</h3></div><div class="card__b toplist">'+
@@ -5654,36 +5719,140 @@ V.stats=async function(){
 /* ---------------------------------------------------------
    8. VALEX PRO (vendeur et acheteur)
    --------------------------------------------------------- */
+const proCache={at:0,data:null,payAt:0,pay:''};
+async function proPricing(){
+  if(proCache.data&&Date.now()-proCache.at<60000)return proCache.data;
+  const [plans,packs,costs,caps]=await Promise.all([
+    sb.from('pro_plans').select('code,side,shared,price_gds,days,base_capacity,max_capacity,inc_chat,inc_photo,quota_visual,quota_voice_min').eq('active',true).order('price_gds'),
+    sb.from('credit_packs').select('code,side,kind,credits,price_gds').eq('active',true).order('credits'),
+    sb.from('credit_costs').select('code,side,kind,label,cost_min,cost_max').eq('active',true).order('cost_min'),
+    sb.from('pro_capacity_prices').select('plan_code,capacity,total_price,bonus_on_reach').order('capacity')
+  ]);
+  const err=plans.error||packs.error||costs.error||caps.error;
+  if(err)throw err;
+  proCache.data={plans:plans.data||[],packs:packs.data||[],costs:costs.data||[],caps:caps.data||[]};
+  proCache.at=Date.now();
+  return proCache.data;
+}
+/* Les colonnes `price_gds` et `total_price` sont en gourdes, pas en centimes.
+   On les passe par le formateur unique en les convertissant une seule fois. */
+const gdsUnits=v=>money(Math.round(Number(v||0)*100));
+const proPlanName=p=>p.side==='seller'?(p.shared?'Boutique partagée':'Boutique individuelle'):(p.shared?'Achats partagés':'Achats individuels');
+function proIncluded(p){
+  const rows=[];
+  if(+p.inc_chat>0)rows.push('<b>'+esc(p.inc_chat)+'</b> messages assistant');
+  if(+p.inc_photo>0)rows.push('<b>'+esc(p.inc_photo)+'</b> photos IA');
+  if(+p.quota_visual>0)rows.push('<b>'+esc(p.quota_visual)+'</b> recherches visuelles');
+  if(+p.quota_voice_min>0)rows.push('<b>'+esc(p.quota_voice_min)+'</b> minutes de voix');
+  return rows;
+}
+/* Le numéro de paiement manuel vient de la base. Tant qu'il est absent,
+   aucun numéro n'est affiché et l'envoi d'argent est explicitement bloqué. */
+async function proPayNumber(){
+  if(Date.now()-proCache.payAt<60000)return proCache.pay;
+  let value='';
+  try{
+    const {data}=await sb.from('app_settings').select('key,value').in('key',['pay_number','moncash_number','natcash_number']);
+    const get=k=>{const r=(data||[]).find(x=>x.key===k);return r&&r.value?String(r.value).trim():'';};
+    value=get('pay_number')||get('moncash_number')||get('natcash_number');
+  }catch(e){}
+  proCache.payAt=Date.now(); proCache.pay=value;
+  return value;
+}
 V.pro=async function(){
   topbar('back',{title:'VAlex Pro'});
   const tab=sessionStorage.getItem('valex_prot')||(S.shop?'seller':'buyer');
-  const {data:reqs}=S.user?await sb.from('pro_requests').select('*').eq('user_id',S.user.id).order('created_at',{ascending:false}):{data:[]};
-  const pend=(reqs||[]).find(r=>r.status==='pending'&&r.kind===tab);
+  const [reqRes,pricing,payNum]=await Promise.all([
+    S.user?sb.from('pro_requests').select('*').eq('user_id',S.user.id).order('created_at',{ascending:false}):Promise.resolve({data:[]}),
+    proPricing().catch(()=>null),
+    proPayNumber()
+  ]);
+  const reqs=reqRes.data||[];
+  const pend=reqs.find(r=>r.status==='pending'&&r.kind===tab);
   const until=tab==='seller'?(S.shop||{}).pro_until:(S.profile||{}).pro_until;
-  const F={seller:[['Gratuit','Produits illimités, prix par lot et par couleur, scanner de code-barres, graphiques des 7 et 30 jours, 3 meilleurs articles, messagerie, vidéos.'],
-      ['Pro','Tout le gratuit, plus : graphiques sur 90 jours, heure à laquelle vos clients commandent, départements des clients, clients fidèles, 10 meilleurs articles, articles réclamés ; 150 publications par photo avec l\'IA par jour (le gratuit donne 5 essais au total) ; conseiller de vente IA (60 questions par jour au lieu de 5) ; vitrine premium composée par l\'IA ; badge Pro sur la boutique. Bientôt (inclus sans supplément le jour où ce sera prêt) : photos nettoyées façon studio, assistant vocal.']],
-    buyer:[['Gratuit','Achats, suivi, messagerie, favoris, alertes de stock, assistant IA avec recherche par photo (15 questions par jour).'],
-      ['Pro','Assistant IA d\'achat avec recherche sur le web pour comparer (« la meilleure offre de panneaux solaires »), 200 questions par jour au lieu de 15. Bientôt : alerte quand un favori baisse de prix, accès en premier aux enchères et ventes flash.']]};
+  const plans=pricing?(pricing.plans||[]).filter(p=>p.side===tab):[];
+  const packs=pricing?(pricing.packs||[]).filter(p=>p.side===tab):[];
+  const costs=pricing?(pricing.costs||[]).filter(p=>p.side===tab):[];
+  const capsFor=p=>(pricing?(pricing.caps||[]):[]).filter(c=>c.plan_code===p.code).sort((a,b)=>a.capacity-b.capacity);
+  const priceFor=(p,cap)=>{
+    if(p.shared){const c=capsFor(p).find(x=>+x.capacity===+cap);if(c)return Number(c.total_price);}
+    return Number(p.price_gds);
+  };
+  const planCard=p=>{
+    const inc=proIncluded(p), caps=capsFor(p);
+    const cap=p.shared?'<b>'+esc(p.base_capacity)+'</b> accès inclus, <b>'+esc(p.max_capacity)+'</b> au maximum':'<b>'+esc(p.base_capacity)+'</b> accès';
+    const ladder=caps.length?'<details class="moreopt"><summary>Voir les paliers de capacité</summary><table class="ptable"><thead><tr><th>Accès</th><th>Prix</th></tr></thead><tbody>'+caps.map(c=>'<tr><td>'+esc(c.capacity)+(c.bonus_on_reach>0?' <span class="t-small">(+'+esc(c.bonus_on_reach)+' crédits)</span>':'')+'</td><td>'+gdsUnits(c.total_price)+'</td></tr>').join('')+'</tbody></table></details>':'';
+    return '<div class="plan plan--pro"><strong>'+esc(proPlanName(p))+'</strong><b>'+gdsUnits(p.price_gds)+'<small> / '+esc(p.days)+' jours</small></b>'+
+      '<p>'+cap+(inc.length?' · '+inc.join(' · '):'')+'.</p>'+ladder+'</div>';
+  };
+  const creditBlock=(packs.length||costs.length)?
+    '<div class="card enter" style="margin-top:12px"><div class="card__h"><h3>Crédits à l\'usage</h3></div><div class="card__b">'+
+      (packs.length?'<p class="t-small">Packs de crédits disponibles.</p><table class="ptable"><thead><tr><th>Crédits</th><th>Usage</th><th>Prix</th></tr></thead><tbody>'+packs.map(x=>'<tr><td>'+esc(x.credits)+' crédits</td><td>'+esc(x.kind==='chat'?'Assistant':'Boutique')+'</td><td>'+gdsUnits(x.price_gds)+'</td></tr>').join('')+'</tbody></table>':'')+
+      (costs.length?'<details class="moreopt"><summary>Coût des actions IA</summary><table class="ptable"><thead><tr><th>Action</th><th>Crédits</th></tr></thead><tbody>'+costs.map(x=>'<tr><td>'+esc(x.label)+'</td><td>'+(+x.cost_min===+x.cost_max?esc(x.cost_min):esc(x.cost_min)+' à '+esc(x.cost_max))+'</td></tr>').join('')+'</tbody></table></details>':'')+
+      '<p class="t-small" style="margin-top:8px">Le serveur reste l\'autorité de facturation : le coût réel est vérifié à chaque action.</p>'+
+    '</div></div>':'';
+  const freeLine='<div class="card enter" style="margin-top:12px"><div class="card__b"><p class="t-small">Le compte gratuit reste gratuit : achats, suivi des commandes, messagerie, favoris et alertes de stock. L\'assistant IA et les outils photo se paient à l\'usage avec des crédits.</p></div></div>';
+  let action='';
+  if(!pricing){
+    action='<div class="card enter" style="margin-top:12px"><div class="card__b"><p>Les tarifs ne sont pas disponibles pour le moment. Aucun prix n\'est affiché tant que la base ne répond pas.</p><button class="btn btn--ghost btn--sm" id="pRetry" style="margin-top:8px">Réessayer</button></div></div>';
+  }else if(!plans.length){
+    action='<div class="card enter" style="margin-top:12px"><div class="card__b"><p>Aucune formule Pro n\'est active pour le moment. Rien ne peut être acheté.</p></div></div>';
+  }else if(tab==='seller'&&!S.shop){
+    action='<div class="card enter" style="margin-top:12px"><div class="card__b"><p>Pro boutique demande d\'abord une boutique.</p><a class="btn btn--pri btn--sm" href="#/devenir-vendeur" style="margin-top:8px">Ouvrir ma boutique</a></div></div>';
+  }else if(pend){
+    action='<div class="ostate ostate--pending enter">'+ico('clock',2)+'<span>Demande envoyée le '+fdt(pend.created_at)+' (référence '+esc(pend.pay_ref)+'). Le QG vérifie le paiement et active Pro, en général le jour même.</span></div>';
+  }else{
+    action='<div class="card enter" style="margin-top:12px"><div class="card__h"><h3>Passer Pro</h3></div><div class="card__b">'+
+      '<div class="field"><label for="pPlan">Formule</label><select id="pPlan">'+plans.map(p=>'<option value="'+attr(p.code)+'">'+esc(proPlanName(p))+' · '+gdsUnits(p.price_gds)+' / '+esc(p.days)+' jours</option>').join('')+'</select></div>'+
+      '<div class="field" id="pCapWrap" hidden><label for="pCap">Capacité partagée</label><select id="pCap"></select></div>'+
+      '<p class="prosum" id="pSum"></p>'+
+      (payNum?
+        '<ol class="howsteps"><li>Envoyez <b id="pAmt"></b> par <b>MonCash</b> ou <b>NatCash</b> au numéro VAlex : <b>'+esc(payNum)+'</b>.</li><li>Écrivez le numéro de transaction reçu par SMS.</li><li>Le QG vérifie et active Pro. Vous êtes prévenu par la cloche.</li></ol>':
+        '<p class="t-small"><b>Paiement manuel suspendu :</b> le numéro MonCash/NatCash de VAlex n\'est pas publié dans la base. N\'envoyez aucun argent avant qu\'il apparaisse ici.</p>')+
+      '<div class="row2"><div class="field"><label for="pM">Envoyé par</label><select id="pM"><option value="moncash">MonCash</option><option value="natcash">NatCash</option></select></div>'+
+      '<div class="field"><label for="pR">N° de transaction</label><input id="pR" inputmode="numeric" placeholder="Ex. 1234567890"'+(payNum?'':' disabled')+'></div></div>'+
+      '<button class="btn btn--pri btn--wide" id="pGo"'+(payNum?'':' disabled')+'>Envoyer ma demande</button>'+
+      '<p class="t-small" style="margin-top:8px">Aucun prélèvement automatique, aucun renouvellement automatique. Chaque demande est vérifiée par le QG.</p>'+
+    '</div></div>';
+  }
   this.set('<div class="prohero enter">'+ico('crown',2)+'<h1>VAlex Pro</h1><p>Payez seulement si ça vous fait gagner du temps ou de l\'argent. Sans engagement : rien ne se renouvelle tout seul.</p></div>'+
     '<div class="seg" id="ptab"><button data-k="seller" class="'+(tab==='seller'?'on':'')+'">Pour ma boutique</button><button data-k="buyer" class="'+(tab==='buyer'?'on':'')+'">Pour mes achats</button></div>'+
     (isPro(until)?'<div class="probadge enter">'+ico('crown',2)+'<span>Vous êtes Pro jusqu\'au <b>'+new Date(until).toLocaleDateString('fr-FR')+'</b>. Vous pouvez prolonger.</span></div>':'')+
-    '<div class="plans enter">'+F[tab].map(([n,x],i)=>'<div class="plan'+(i?' plan--pro':'')+'"><strong>'+n+'</strong><b>'+(i?gds(PRO[tab].m)+'<small> / mois</small>':'0 HTG')+'</b>'+(i?'<span class="t-small">ou '+gds(PRO[tab].y)+' / an : 2 mois offerts</span>':'')+'<p>'+x+'</p></div>').join('')+'</div>'+
-    (tab==='seller'&&!S.shop?'<div class="card enter" style="margin-top:12px"><div class="card__b"><p>Pro boutique demande d\'abord une boutique.</p><a class="btn btn--pri btn--sm" href="#/devenir-vendeur" style="margin-top:8px">Ouvrir ma boutique</a></div></div>':
-    pend?'<div class="ostate ostate--pending enter">'+ico('clock',2)+'<span>Demande envoyée le '+fdt(pend.created_at)+' (référence '+esc(pend.pay_ref)+'). Le QG vérifie le paiement et active Pro, en général le jour même.</span></div>':
-    '<div class="card enter" style="margin-top:12px"><div class="card__h"><h3>Passer Pro</h3></div><div class="card__b">'+
-      '<div class="seg" id="pmo"><button data-m="1" class="on">1 mois · '+gds(PRO[tab].m)+'</button><button data-m="12">1 an · '+gds(PRO[tab].y)+'</button></div>'+
-      '<ol class="howsteps"><li>Envoyez le montant par <b>MonCash</b> ou <b>NatCash</b> au numéro VAlex : <b>'+VALEX_PAY+'</b>.</li><li>Écrivez ci-dessous le numéro de transaction reçu par SMS.</li><li>Le QG vérifie et active Pro. Vous êtes prévenu par la cloche.</li></ol>'+
-      '<div class="row2"><div class="field"><label for="pM">Envoyé par</label><select id="pM"><option value="moncash">MonCash</option><option value="natcash">NatCash</option></select></div>'+
-      '<div class="field"><label for="pR">N° de transaction</label><input id="pR" inputmode="numeric" placeholder="Ex. 1234567890"></div></div>'+
-      '<button class="btn btn--pri btn--wide" id="pGo">Envoyer ma demande</button><p class="t-small" style="margin-top:8px">Le paiement automatique arrivera avec Kobara. En attendant, chaque demande est vérifiée à la main.</p></div></div>'));
+    (plans.length?'<div class="plans enter">'+plans.map(planCard).join('')+'</div>':'')+
+    freeLine+action+creditBlock);
   $$('#ptab button').forEach(b=>b.onclick=()=>{sessionStorage.setItem('valex_prot',b.dataset.k);V.pro();});
-  let months=1; $$('#pmo button').forEach(b=>b.onclick=()=>{months=+b.dataset.m; $$('#pmo button').forEach(x=>x.classList.toggle('on',x===b));});
+  const retry=$('#pRetry'); if(retry)retry.onclick=()=>{proCache.at=0;proCache.data=null;V.pro();};
+  if(!$('#pPlan'))return;
+  const selPlan=()=>plans.find(p=>p.code===$('#pPlan').value)||plans[0];
+  function syncForm(){
+    const p=selPlan(); if(!p)return;
+    const wrap=$('#pCapWrap'), cs=capsFor(p), capSel=$('#pCap');
+    if(p.shared&&cs.length){
+      wrap.hidden=false;
+      const cur=capSel.value;
+      capSel.innerHTML=cs.map(c=>'<option value="'+attr(c.capacity)+'">'+esc(c.capacity)+' accès · '+gdsUnits(c.total_price)+'</option>').join('');
+      if(cur&&cs.some(c=>String(c.capacity)===cur))capSel.value=cur;
+    }else wrap.hidden=true;
+    const cap=p.shared?+(capSel.value||p.base_capacity):p.base_capacity;
+    const amount=priceFor(p,cap);
+    $('#pSum').innerHTML='<b>'+gdsUnits(amount)+'</b> pour <b>'+esc(p.days)+' jours</b>'+(p.shared?' · '+esc(cap)+' accès':'');
+    const amt=$('#pAmt'); if(amt)amt.textContent=gdsUnits(amount);
+  }
+  $('#pPlan').onchange=syncForm;
+  if($('#pCap'))$('#pCap').onchange=syncForm;
+  syncForm();
   const g=$('#pGo'); if(g)g.onclick=async ()=>{
     if(!S.user){toast('Connectez-vous d\'abord.');return go('#/compte');}
     const ref=$('#pR').value.trim(); if(ref.length<4)return toast('Écrivez le numéro de transaction.');
+    const p=selPlan(); if(!p)return;
+    const cap=p.shared?+($('#pCap').value||p.base_capacity):p.base_capacity;
+    const amount=priceFor(p,cap);
     busy('#pGo',true,'Envoi…');
-    const {error}=await sb.from('pro_requests').insert({user_id:S.user.id,shop_id:tab==='seller'?S.shop.id:null,kind:tab,months,pay_method:$('#pM').value,pay_ref:ref,amount_cents:PRO[tab][months===12?'y':'m']});
-    busy('#pGo',false); if(error)return fail(error,'Pro'); toast('Demande envoyée. Le QG vérifie le paiement.'); V.pro(); };
+    const {error}=await sb.from('pro_requests').insert({user_id:S.user.id,shop_id:p.side==='seller'?S.shop.id:null,kind:p.side,months:1,pay_method:$('#pM').value,pay_ref:ref,amount_cents:Math.round(Number(amount)*100),note:'plan='+p.code+(p.shared?' capacity='+cap:'')});
+    busy('#pGo',false);
+    if(error)return fail(error,'Pro');
+    toast('Demande envoyée. Le QG vérifie le paiement.'); V.pro();
+  };
 };
 /* VAlex Pro reste sur #/pro ; #/abonnement affiche le statut de gratuité. */
 
@@ -5699,6 +5868,61 @@ async function forgotPw(pref){
   if(error)return fail(error,'Mot de passe');
   ask({title:'Lien envoyé',body:'<p>Si un compte existe pour <b>'+esc(em)+'</b>, un email vient de partir. Ouvrez le lien sur ce téléphone, puis choisissez votre nouveau mot de passe. Regardez aussi dans les spams.</p>',ok:'Compris',cancel:false});
 }
+/* Google Identity Services : bouton officiel et jeton verifie par Supabase.
+   Le flux OAuth reste le repli si le script Google ne se charge pas. */
+const GOOGLE_CLIENT_ID='1074165667592-mc1u6j829s6sfg731vb8dnkl499m68bj.apps.googleusercontent.com';
+const GIS_SRC='https://accounts.google.com/gsi/client?hl=fr';
+let gisPromise=null;
+function loadGis(){
+  if(window.google&&google.accounts&&google.accounts.id)return Promise.resolve(true);
+  if(gisPromise)return gisPromise;
+  gisPromise=new Promise(resolve=>{
+    let done=false;
+    const finish=ok=>{ if(done)return; done=true; resolve(ok); };
+    const sc=document.createElement('script');
+    sc.src=GIS_SRC; sc.async=true; sc.defer=true;
+    sc.onload=()=>finish(!!(window.google&&google.accounts&&google.accounts.id));
+    sc.onerror=()=>finish(false);
+    document.head.appendChild(sc);
+    setTimeout(()=>finish(!!(window.google&&google.accounts&&google.accounts.id)),8000);
+  });
+  return gisPromise;
+}
+function b64url(bytes){let t='';bytes.forEach(b=>t+=String.fromCharCode(b));return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+async function gisNonce(){
+  const raw=b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));
+  const hex=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return {raw,hex};
+}
+async function gisSignIn(res,rawNonce){
+  if(!res||!res.credential)return;
+  busy('#gIn',true,'Connexion…');
+  const {error}=await sb.auth.signInWithIdToken({provider:'google',token:res.credential,nonce:rawNonce});
+  busy('#gIn',false);
+  if(error)return fail(error,'Google');
+  await loadSession(); go('#/compte');
+  toast('Bonjour '+((S.profile&&S.profile.first_name)||'')+'.');
+}
+async function mountGis(box){
+  let ready=false;
+  try{ ready=await loadGis(); }catch(e){ ready=false; }
+  if(!ready||!box||!box.isConnected)return;
+  let nonce;
+  try{ nonce=await gisNonce(); }catch(e){ return; }
+  const {raw,hex}=nonce;
+  try{
+    google.accounts.id.initialize({
+      client_id:GOOGLE_CLIENT_ID,
+      nonce:hex,
+      use_fedcm_for_prompt:false,
+      callback:r=>{ gisSignIn(r,raw); }
+    });
+    google.accounts.id.renderButton(box,{type:'standard',theme:'outline',size:'large',text:'continue_with',shape:'rectangular',width:Math.min(336,Math.max(210,box.clientWidth||320))});
+    box.hidden=false;
+    const fb=$('#gIn'); if(fb)fb.hidden=true;
+  }catch(e){ console.error('[VAlex] Google GIS indisponible'); }
+}
 async function googleIn(){
   const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
   if(error){ if(/provider|enabled|unsupported/i.test(error.message||''))return ask({title:'Google pas encore branché',body:'<p>La connexion Google sera active dès que VAlex aura relié son compte Google. En attendant, créez votre compte avec votre email : ça prend une minute.</p>',ok:'Compris',cancel:false});
@@ -5710,6 +5934,7 @@ V.account=async function(){
   if(!S.user){
     topbar('back',{title:'Compte'});
     this.set('<div class="authbox enter"><h1>Bienvenue sur VAlex</h1><p>Un seul compte pour acheter, suivre vos commandes et parler aux vendeurs. Pour vendre, vous ouvrirez ensuite votre boutique depuis ce compte.</p>'+
+      '<div class="gsibox" id="gsiBox" hidden></div>'+
       '<button class="btn btn--wide gbtn" id="gIn">'+ico('google',1)+'Continuer avec Google</button><div class="orsep"><span>ou avec votre email</span></div>'+
       '<div class="field"><label for="liEm">Email</label><input type="email" id="liEm" autocomplete="email" placeholder="vous@exemple.com"><div class="err">Email invalide.</div></div>'+
       '<div class="field"><label for="liPw">Mot de passe</label><input type="password" id="liPw" autocomplete="current-password"></div>'+
@@ -5718,6 +5943,7 @@ V.account=async function(){
       '<div class="newacc"><span>Pas encore de compte ?</span><button class="btn btn--mango btn--wide" id="newAcc">Créer mon compte gratuit</button></div>'+
       '<p class="t-small" style="text-align:center;margin-top:14px"><a href="#/conditions">Conditions et règles</a> · <a href="#/legal/confidentialite">Confidentialité</a></p></div>');
     $('#gIn').onclick=googleIn;
+    const gsib=$('#gsiBox'); if(gsib)mountGis(gsib);
     $('#forgot').onclick=()=>forgotPw($('#liEm').value.trim());
     $('#newAcc').onclick=()=>wiz.open('buyer');
     $('#liGo').onclick=async ()=>{ const em=$('#liEm').value.trim(), pw=$('#liPw').value;
@@ -5980,7 +6206,7 @@ const LEGAL={
   '<li><b>Avant la livraison</b> : vous envoyez l\'argent directement sur le numéro MonCash ou NatCash du vendeur. <b>VAlex n\'est pas partie à ce paiement, ne détient pas cet argent et ne pourra en aucun cas le rembourser.</b> Parlez au vendeur par la messagerie VAlex avant de payer, et ne payez qu\'un vendeur en qui vous avez confiance.</li>'+
   '<li><b>Payé via VAlex</b> (bientôt) : VAlex reçoit votre paiement, le garde jusqu\'à la livraison confirmée par votre code, puis le verse au vendeur. Si l\'article ne vous est pas remis, VAlex vous rembourse.</li></ul>'+
   '<h3>5 bis. Payer pour quelqu\'un d\'autre</h3><p>Chaque commande a un code de paiement à 6 chiffres. Vous pouvez l\'envoyer à un proche, en Haïti ou à l\'étranger, pour qu\'il paie à votre place. Celui qui paie ne reçoit pas l\'article : seule la personne qui a passé la commande peut le récupérer, avec son propre code de réception. La page de paiement ne montre ni nom, ni adresse, ni téléphone. Ne partagez jamais votre code de réception.</p>'+
-  '<h3>5 ter. Livraison</h3><p>Le vendeur indique pour chaque article ses frais de livraison (inclus dans le prix ou un montant). Vous pouvez toujours choisir d\'aller chercher l\'article chez le vendeur : vous ne payez alors pas la livraison. Lorsque la livraison par VAlex ouvrira, ses tarifs seront affichés avant chaque commande ; les articles de plus de 5 000 HTG ne seront pas livrés par VAlex (retrait chez le vendeur, ou livraison par le vendeur).</p>'+
+  '<h3>5 ter. Livraison</h3><p>Le vendeur indique pour chaque article ses frais de livraison (inclus dans le prix ou un montant). Vous pouvez toujours choisir d\'aller chercher l\'article chez le vendeur : vous ne payez alors pas la livraison. Lorsque la livraison par VAlex ouvrira, ses tarifs seront affichés avant chaque commande ; les articles de plus de 5 000 GDS ne seront pas livrés par VAlex (retrait chez le vendeur, ou livraison par le vendeur).</p>'+
   '<h3>6. Avis et notes</h3><p>La collecte de notes et d\'avis est fermée. Aucune nouvelle note ne peut être soumise. Les avis historiques restent conservés sans être affichés, et aucun avis ne peut être acheté, échangé ou rédigé par le vendeur.</p>'+
   '<h3>7. Messagerie</h3><p>Les messages sont privés entre les deux participants. VAlex ne les lit pas. En cas de litige, un participant peut choisir de partager une conversation avec le QG pour qu\'il l\'examine.</p>'+
   '<h3>8. Sanctions</h3><p>Voir « Articles interdits et sanctions ». VAlex peut retirer un contenu ou suspendre un compte qui enfreint ces règles. Aucune boutique n\'est supprimée et aucun argent légitime n\'est retenu sans examen ; toute décision peut faire l\'objet d\'un recours.</p>'+
@@ -5992,7 +6218,7 @@ const LEGAL={
   '<h3>2. Vos articles</h3><p>Vous vendez uniquement ce que vous avez réellement en stock (pas de précommande). Photos de vos propres articles : pas de photos prises sur internet. Description honnête : état, taille, défauts. Un article épuisé reste visible avec le bouton « Je le veux ».</p>'+
   '<h3>3. Prix</h3><p>Vous fixez vos prix librement, y compris par taille, par couleur et par lot. Un prix ne peut baisser qu\'une fois ; le prix barré n\'apparaît qu\'après 7 jours au prix d\'origine, pour éviter les fausses promotions.</p>'+
   '<h3>4. Commandes et délais</h3><p>Acceptez ou refusez sous 24 h. Marquez « Expédiée » quand le colis part. Demandez le code de réception à la remise. Refuser trop souvent après avoir accepté fait baisser votre visibilité.</p>'+
-  '<h3>5. Coût</h3><p>Ouverture gratuite jusqu\'au 31 décembre 2026 inclus. VAlex ne retient aucune commission sur vos ventes (0 %), que le client paie à la livraison ou directement sur votre numéro. Quand c\'est VAlex qui livre, VAlex retient 20 % des frais de livraison ; ces 20 % rémunèrent le service de livraison VAlex. Le montant exact que vous recevrez sera toujours affiché avant de publier. Après le 31 décembre 2026, aucun prélèvement et aucune suspension automatiques : les conditions seront annoncées à l\'avance. L\'option Pro reste facultative (750 HTG/mois ou 7 500 HTG/an) et ne se renouvelle pas toute seule.</p>'+
+  '<h3>5. Coût</h3><p>Ouverture gratuite jusqu\'au 31 décembre 2026 inclus. VAlex ne retient aucune commission sur vos ventes (0 %), que le client paie à la livraison ou directement sur votre numéro. Quand c\'est VAlex qui livre, VAlex retient 20 % des frais de livraison ; ces 20 % rémunèrent le service de livraison VAlex. Le montant exact que vous recevrez sera toujours affiché avant de publier. Après le 31 décembre 2026, aucun prélèvement et aucune suspension automatiques : les conditions seront annoncées à l\'avance. L\'option Pro reste facultative (2 500 GDS/mois pour une boutique, 1 500 GDS/mois pour un acheteur) et ne se renouvelle pas toute seule. Aucun tarif annuel n\'est proposé.</p>'+
   '<h3>5 bis. Mode de paiement de chaque article</h3><p>À la publication, vous choisissez une seule option : à la livraison, ou avant la livraison avec votre numéro MonCash ou NatCash. Si vous choisissez « avant la livraison », vous êtes seul responsable de l\'argent reçu et de la livraison : en cas d\'article non livré, VAlex peut sanctionner la boutique jusqu\'au bannissement.</p>'+
   '<h3>6. Ce que vous vous engagez à ne pas faire</h3><p>Fausses informations, faux stock, articles interdits, demander au client de payer en dehors d\'une commande pour éviter les règles, harceler un client, revendre ses données.</p>'+
   '<h3>7. Données des clients</h3><p>Nom, téléphone et adresse d\'un client ne servent qu\'à livrer sa commande. Interdit de les réutiliser pour de la publicité ou de les transmettre.</p>'+
@@ -6019,9 +6245,9 @@ const LEGAL={
   '<h3>Échelle des sanctions</h3><p>1<sup>re</sup> faute : avertissement. 2<sup>e</sup> : boutique gelée 3 jours. 3<sup>e</sup> : boutique cachée 14 jours. 4<sup>e</sup> : bannissement. Les faits graves (arme, drogue, arnaque, menace, contenu impliquant un mineur) entraînent un bannissement immédiat. Les fautes s\'effacent après 6 mois sans récidive. Chaque sanction peut faire l\'objet d\'un recours.</p>'],
  livreurs:['Conditions des livreurs VAlex','truck',
   '<p>Réseau en préparation. Candidature à partir de 18 ans, avec pièce d\'identité, photo et, pour une moto, un permis. Les documents restent privés. Une candidature ne vaut pas embauche : VAlex prévient chaque candidat de la suite donnée.</p>'+
-  '<h3>Tarifs prévus de la livraison VAlex</h3><p>Article léger (moins de 2 kg) : 500 HTG par tranche de 10 km. Article moyen (2 à 10 kg) : 750 HTG par tranche. Article lourd (10 à 25 kg) : 1 000 HTG par tranche. Au-delà de 25 kg ou encombrant (meuble, matériaux) : sur devis. Les articles de plus de 5 000 HTG ne sont pas livrés par VAlex. Ces tarifs peuvent varier et seront toujours affichés avant la commande.</p>'],
+  '<h3>Tarifs prévus de la livraison VAlex</h3><p>Article léger (moins de 2 kg) : 500 GDS par tranche de 10 km. Article moyen (2 à 10 kg) : 750 GDS par tranche. Article lourd (10 à 25 kg) : 1 000 GDS par tranche. Au-delà de 25 kg ou encombrant (meuble, matériaux) : sur devis. Les articles de plus de 5 000 GDS ne sont pas livrés par VAlex. Ces tarifs peuvent varier et seront toujours affichés avant la commande.</p>'],
  pro:['Conditions de VAlex Pro','crown',
-  '<p>Pro boutique : 750 HTG par mois ou 7 500 HTG par an. Pro achats : 250 HTG par mois ou 2 500 HTG par an. Paiement par MonCash ou NatCash avec numéro de transaction, vérifié par le QG. Pas de renouvellement automatique : à la fin de la période, la boutique repasse en gratuit sans rien perdre. La gratuité de lancement court jusqu\'au 31 décembre 2026 inclus ; ensuite, aucun prélèvement et aucune suspension automatiques. Un paiement non trouvé est refusé avec une explication.</p>']
+  '<p>Pro boutique : 2 500 GDS par mois. Pro achats : 1 500 GDS par mois. Aucun tarif annuel n\'est proposé. Paiement par MonCash ou NatCash avec numéro de transaction, vérifié par le QG. Pas de renouvellement automatique : à la fin de la période, la boutique repasse en gratuit sans rien perdre. La gratuité de lancement court jusqu\'au 31 décembre 2026 inclus ; ensuite, aucun prélèvement et aucune suspension automatiques. Un paiement non trouvé est refusé avec une explication.</p>']
 };
 V.legal=function(kind){
   if(kind==='cond')kind='conditions'; if(kind==='conf')kind='confidentialite';
@@ -6148,7 +6374,7 @@ V.assistant=async function(){
   const hist=(()=>{try{return JSON.parse(sessionStorage.getItem('valex_ai')||'[]');}catch(e){return [];}})();
   this.set('<div class="chat"><div class="aihero">'+ico('sparkle',2)+'<div><strong>Demandez ce que vous cherchez</strong><span>L\'assistant répond seulement avec les articles vendus sur VAlex. En français ou en kreyòl.</span></div></div>'+
     '<div class="msgs" id="aim"></div>'+
-    '<div class="quick" id="aiq">'+['Une robe pour un mariage, moins de 3 000 HTG','Baskets blanches pointure 42','Un cadeau pour un homme','Mwen bezwen yon sak pou lekòl'].map(q=>'<button>'+esc(q)+'</button>').join('')+'</div>'+
+    '<div class="quick" id="aiq">'+['Une robe pour un mariage, moins de 3 000 GDS','Baskets blanches pointure 42','Un cadeau pour un homme','Mwen bezwen yon sak pou lekòl'].map(q=>'<button>'+esc(q)+'</button>').join('')+'</div>'+
     '<div class="composer">'+(pro?'<label class="webt" title="Chercher aussi sur le web"><input type="checkbox" id="aiW"><span>Web</span></label>':'')+'<textarea id="aiIn" rows="1" maxlength="600" placeholder="Ex. : un sac pour l\'école, solide"></textarea><button id="aiGo" aria-label="Envoyer">'+ico('send',2.2)+'</button></div></div>');
   document.body.classList.add('inchat'); const offc=()=>{document.body.classList.remove('inchat'); removeEventListener('hashchange',offc);}; addEventListener('hashchange',offc);
   const box=$('#aim'), all=await fetchCatalog({limit:200});
@@ -6167,13 +6393,11 @@ V.assistant=async function(){
     hist.push(r?{role:'assistant',content:r.answer||'Je n\'ai pas trouvé.',ids:r.ids||[],web:r.web||[]}:{role:'assistant',content:'L\'assistant est momentanément indisponible. Réessayez dans quelques minutes.'});
     try{sessionStorage.setItem('valex_ai',JSON.stringify(hist.slice(-20)));}catch(e){} paint(); };
 };
-/* L'assistant s'ouvre depuis la recherche et l'accueil */
+/* L'assistant reste accessible par la route #/assistant. Aucune carte
+   promotionnelle n'est empilee dans l'accueil ou la recherche. */
 (function(){
 const _s=V.search;
-V.search=async function(q){ await _s.call(this,q); const i=$('#view input[type=search], #view .sbox input, #view input'); if(i)micFor(i);
-  const h=$('#view'); if(h&&!$('#aiEntry'))h.insertAdjacentHTML('afterbegin','<a class="aientry" id="aiEntry" href="#/assistant">'+ico('sparkle',2)+'<span><strong>Demander à l\'assistant VAlex</strong><span>Décrivez ce que vous voulez, il trouve pour vous</span></span>'+ico('chev',2)+'</a>'); };
-const _h=V.home;
-V.home=async function(){ await _h.apply(this,arguments); const c=$('#view .catgrid'); if(c&&!$('#aiEntry'))c.insertAdjacentHTML('beforebegin','<a class="aientry" id="aiEntry" href="#/assistant">'+ico('sparkle',2)+'<span><strong>Assistant VAlex</strong><span>« Une robe pour un mariage, moins de 3 000 HTG »</span></span>'+ico('chev',2)+'</a>'); };
+V.search=async function(q){ await _s.call(this,q); const i=$('#view input[type=search], #view .sbox input, #view input'); if(i)micFor(i); };
 })();
 
 /* ---------- branchements automatiques sur chaque écran ---------- */
@@ -6279,26 +6503,17 @@ fetchCatalog=async function(opts){
 Object.assign(I,{ bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>', bus:'<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 18v3M16 18v3"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/>',
   ret:'<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-4"/>', status:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>' });
 
-/* ---------- 1. Devise : gourdes, dollars US, dola ayisyen ---------- */
-let CUR=(()=>{try{return localStorage.getItem('valex_cur')||'HTG';}catch(e){return 'HTG';}})(), USD_HTG=131;
-function money(c){ const h=Math.round(fromCents(c));
-  if(CUR==='USD')return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(h/USD_HTG)+' $US';
-  if(CUR==='DOLA')return new Intl.NumberFormat('fr-FR').format(Math.round(h/5))+' dola';
-  return new Intl.NumberFormat('fr-FR').format(h)+' HTG'; }
+/* ---------- 1. Prix : GDS partout, aucune devise alternative ---------- */
+/* Les montants sont stockes en centimes. Le proprietaire a decide que tous
+   les prix affiches sont en GDS. Les valeurs stockees ne sont jamais
+   converties ni modifiees : seule l'etiquette d'affichage change. */
+function money(c){
+  const h=Math.round(fromCents(c));
+  return new Intl.NumberFormat('fr-FR').format(h)+' GDS';
+}
 let ONLINE_PAY=false;
-setTimeout(async ()=>{ try{ const {data}=await sb.from('app_settings').select('key,value').in('key',['usd_htg','online_pay']);
-  (data||[]).forEach(r=>{ if(r.key==='usd_htg'&&+r.value>0)USD_HTG=+r.value; if(r.key==='online_pay')ONLINE_PAY=r.value==='on'; }); }catch(e){} },800);
-(function(){
-const _p=V.prefs;
-V.prefs=async function(){ await _p.apply(this,arguments);
-  const b=$('#cuBtn'); if(!b)return; const lab={HTG:'Gourde (HTG)',USD:'Dollar américain ($US)',DOLA:'Dola ayisyen (1 dola = 5 gourdes)'};
-  const em=b.querySelector('em'); if(em)em.textContent=lab[CUR];
-  b.onclick=async ()=>{ let pick=CUR; setTimeout(()=>$$('#curK button').forEach(x=>x.onclick=()=>{pick=x.dataset.c; $$('#curK button').forEach(y=>y.classList.toggle('on',y===x));}),0);
-    const ok=await ask({title:'Afficher les prix en',body:'<div class="seg" id="curK" style="flex-direction:column">'+Object.entries(lab).map(([k,l])=>'<button type="button" data-c="'+attr(k)+'" class="'+(k===CUR?'on':'')+'">'+l+'</button>').join('')+'</div>'+
-      '<p class="t-small" style="margin-top:8px">Taux du jour : 1 $US = '+String(USD_HTG).replace('.',',')+' HTG. Le paiement se fait toujours en gourdes.</p>',ok:'Choisir'});
-    if(!ok)return; CUR=pick; try{localStorage.setItem('valex_cur',CUR);}catch(e){} toast('Prix affichés en '+lab[CUR]+'.'); route(); };
-};
-})();
+setTimeout(async ()=>{ try{ const {data}=await sb.from('app_settings').select('key,value').eq('key','online_pay');
+  (data||[]).forEach(r=>{ if(r.key==='online_pay')ONLINE_PAY=r.value==='on'; }); }catch(e){} },800);
 
 /* page produit en 2 colonnes sur PC : on retire la classe ailleurs */
 window.addEventListener('hashchange',()=>{ if(!/^#\/produit\//.test(location.hash)){ const vw=document.getElementById('view'); if(vw)vw.classList.remove('pdp'); } });
@@ -6491,7 +6706,7 @@ function shipHTML(d){
     o('shop','Frais habituels de ma boutique','Ceux réglés dans « Livraison ».')+
     o('included','Livraison incluse dans le prix','Le client ne paie rien de plus.')+
     o('fee','Frais pour cet article','Pour un article lourd ou fragile.',
-      '<div class="shipfee'+(d.ship==='fee'?' on':'')+'"><input type="number" id="pShip" min="0" step="25" inputmode="decimal" placeholder="Montant en HTG" value="'+esc(d.shipFee||'')+'"><div class="err">Indiquez un montant.</div></div>')+
+      '<div class="shipfee'+(d.ship==='fee'?' on':'')+'"><input type="number" id="pShip" min="0" step="25" inputmode="decimal" placeholder="Montant en GDS" value="'+esc(d.shipFee||'')+'"><div class="err">Indiquez un montant.</div></div>')+
     '<div class="hint">Le client peut toujours venir chercher l\'article chez vous : il ne paie alors pas la livraison.</div></div>';
 }
 document.addEventListener('change',e=>{ if(e.target&&e.target.name==='shipm'){ document.querySelectorAll('.shipmode .pick').forEach(l=>l.classList.toggle('on',!!l.querySelector('input:checked'))); const f=document.querySelector('.shipfee'); if(f)f.classList.toggle('on',e.target.value==='fee'); } });
@@ -6682,7 +6897,7 @@ window.addEventListener('click',async e=>{
   const f=(d&&d.dept_fees)||{}; const home=S.shop.department;
   $('#view').insertAdjacentHTML('beforeend','<div class="card enter" id="dfCard" style="margin-top:14px"><div class="card__h"><h3>Frais de livraison par département</h3><span class="badge '+(Object.keys(f).length>=10||(d&&d.mode==='pickup')?'badge--live':'badge--warn')+'">Obligatoire</span></div><div class="card__b">'+
     '<p class="t-small" style="margin-bottom:10px">Quand vous livrez vous-même, indiquez ce que coûte la livraison vers chaque département. Le client ne voit que le prix de son département, avec la mention « frais fixés par le vendeur ». Si vous ne livrez jamais, choisissez « retrait seulement » plus haut.</p>'+
-    '<div class="dfgrid">'+Object.keys(DEPTS).map(k=>'<label><span>'+esc(k)+(k===home?' <em>(chez vous)</em>':'')+'</span><span class="dfin"><input type="number" min="0" step="25" inputmode="numeric" data-dep="'+attr(k)+'" value="'+(f[k]!=null?Math.round(f[k]/100):'')+'" placeholder="HTG"><b>HTG</b></span></label>').join('')+'</div>'+
+    '<div class="dfgrid">'+Object.keys(DEPTS).map(k=>'<label><span>'+esc(k)+(k===home?' <em>(chez vous)</em>':'')+'</span><span class="dfin"><input type="number" min="0" step="25" inputmode="numeric" data-dep="'+attr(k)+'" value="'+(f[k]!=null?Math.round(f[k]/100):'')+'" placeholder="GDS"><b>GDS</b></span></label>').join('')+'</div>'+
     '<label class="check" style="margin-top:12px"><input type="checkbox" id="dfVary"'+(d&&d.fees_may_vary?' checked':'')+'> <span>Ces frais peuvent varier un peu (le client en est prévenu)</span></label>'+
     '<button class="btn btn--pri" id="dfSave" style="margin-top:12px">Enregistrer les 10 prix</button></div></div>');
   $('#dfSave').onclick=async()=>{ const out={}; let miss=0; $$('#dfCard input[data-dep]').forEach(i=>{ if(i.value===''){miss++;return;} out[i.dataset.dep]=Math.round(Number(i.value)*100); });
@@ -6757,7 +6972,6 @@ const HOWTO2='<details class="howto"><summary>'+ico('help',2)+'Comment avancent 
   '<p class="t-small">Délais de livraison après la remise : même ville 24 h · même département 48 h · autre département 4 jours.</p></details>';
 
 V.orders=async function(){
-  if(sb)sb.rpc('expire_pending_orders').then(()=>{},()=>{});
   let t=(location.hash.split('?t=')[1]||'pending'); if(t==='confirmed')t='pending';
   this.set('<div class="phead enter"><div class="phead__t"><h1>Commandes</h1><p>Remettez chaque colis dans les 24 h : au relais VAlex ou à votre livreur.</p></div></div>'+
     '<div class="otabs otabs--v" id="vot">'+OST2.map(([k,i,l])=>'<a href="#/commandes?t='+k+'" class="'+(k===t?'on':'')+'">'+l+'<span id="vc_'+k+'"></span></a>').join('')+'</div>'+HOWTO2+
@@ -7366,7 +7580,7 @@ function finMoney(c){
   const n=Number(c)||0, abs=Math.abs(n);
   const h=Math.floor(abs/100), r=abs%100;
   const body=new Intl.NumberFormat('fr-FR').format(h)+(r?','+String(r).padStart(2,'0'):'');
-  return (n<0?'-':'')+body+' HTG';
+  return (n<0?'-':'')+body+' GDS';
 }
 function finSigned(c){ const n=Number(c)||0; return (n>0?'+':'')+finMoney(n); }
 function finWhen(iso){ return iso?fdt(iso):'—'; }
@@ -7527,7 +7741,7 @@ async function refundsModule(){
 }
 function rfWhen(iso){ return iso?fdt(iso):'—'; }
 function rfOrder(id){ return id?'commande '+id.slice(0,8):'commande inconnue'; }
-function rfMoney(c){ try{ return window.VAlexRefunds.formatCents(c); }catch(_){ return String(c)+' HTG'; } }
+function rfMoney(c){ try{ return window.VAlexRefunds.formatCents(c); }catch(_){ return String(c)+' GDS'; } }
 V.refunds=async function(){
   topbar('back',{title:'Remboursements'});
   if(!S.user){ go('#/compte'); return; }
@@ -8615,7 +8829,7 @@ async function shrink(file,max){ try{ const img=await createImageBitmap(file); c
       '<p class="t-small" style="margin-top:6px">Elle sera utilisable dès l\'ouverture de la page publicitaire.</p>';
     return r;
   }
-  $('#adcB').innerHTML='<p class="t-small">Un code partenaire donne droit à une annonce gratuite de 1 500 HTG. Le code est sensible à la casse.</p>'+
+  $('#adcB').innerHTML='<p class="t-small">Un code partenaire donne droit à une annonce gratuite de 1 500 GDS. Le code est sensible à la casse.</p>'+
     '<div class="field" style="margin:12px 0 0"><label for="adcIn">Code partenaire</label><div style="display:flex;gap:8px"><input id="adcIn" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Votre code"><button class="btn btn--pri" id="adcGo" type="button">Valider</button></div></div>';
   const g=$('#adcGo'); if(g)g.onclick=async ()=>{
     const code=(($('#adcIn')||{}).value||'').trim();
@@ -9141,6 +9355,7 @@ start();
 <script type="module" src="/notification-prefs.js"></script>
 <script type="module" src="/support.js"></script>
 <script type="module" src="/agent.js"></script>
+<script type="module" src="/pwa.js"></script>
 <script type="module" src="/push.js"></script>
 </body>
 </html>
