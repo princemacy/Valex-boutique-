@@ -149,6 +149,14 @@ test("les routes publiques de consentement restent declarees", () => {
 
 test("la migration ad_home expose le vrai nom de boutique sans donnee privee", () => {
   const sql = repoFile("sql/2026-11-24-ad-home-shop-name.sql");
+  assert.match(sql, /APPLIQUEE en production le 25 novembre 2026/);
+  assert.match(sql, /20261125113318/);
+  assert.match(sql, /pg_get_function_result\('public\.ad_home\(\)'::regprocedure\)/);
+  assert.doesNotMatch(
+    sql,
+    /information_schema\.columns[\s\S]{0,120}table_name = 'ad_home'/,
+    "ad_home est une fonction : information_schema.columns ne la voit pas",
+  );
   assert.match(sql, /shop_id uuid/);
   assert.match(sql, /shop_name text/);
   assert.match(sql, /slot_no between 3 and 10/);
@@ -160,6 +168,30 @@ test("la migration ad_home expose le vrai nom de boutique sans donnee privee", (
   assert.match(sql, /revoke all on function public\.ad_home\(\) from public/);
   assert.match(sql, /grant execute on function public\.ad_home\(\) to anon, authenticated, service_role/);
   assert.doesNotMatch(sql, /amount_cents|wallet_id|pay_ref/i);
+});
+
+test("le durcissement finance applique est documente et limite la lecture", () => {
+  const sql = repoFile("sql/2026-11-25-secure-finance-access.sql");
+  assert.match(sql, /20261125113651/);
+  assert.match(sql, /secure_finance_fee_config_access/);
+  assert.match(sql, /REVOKE SELECT ON TABLE public\.fee_config FROM anon/);
+  assert.match(sql, /CREATE POLICY fee_config_owner_aal2_select/);
+  assert.match(sql, /USING \(public\.is_owner\(\)\)/);
+  assert.match(sql, /REVOKE SELECT ON TABLE public\.credit_hold_lines FROM anon, authenticated/);
+  assert.match(sql, /REVOKE SELECT ON TABLE public\.pro_capacity_bonus_override FROM anon, authenticated/);
+  assert.match(sql, /NOTIFY pgrst, 'reload schema'/);
+  assert.doesNotMatch(sql, /GRANT SELECT ON TABLE public\.fee_config/);
+});
+
+test("le rollback finance est archive avec un avertissement explicite", () => {
+  const sql = repoFile("sql/archive/finance_rls_rollback_2026-11-25.sql");
+  assert.match(sql, /NON APPLIQUEE/);
+  assert.match(sql, /etat moins sur/);
+  assert.match(sql, /autorisation explicite/);
+  assert.match(sql, /DROP POLICY IF EXISTS fee_config_owner_aal2_select/);
+  assert.match(sql, /GRANT SELECT ON TABLE public\.fee_config TO anon, authenticated/);
+  assert.match(sql, /GRANT SELECT ON TABLE public\.credit_hold_lines TO anon, authenticated/);
+  assert.match(sql, /GRANT SELECT ON TABLE public\.pro_capacity_bonus_override TO anon, authenticated/);
 });
 
 test("le rollback ad_home restaure l'ancien contrat sans shop_name", () => {

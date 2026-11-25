@@ -1,5 +1,11 @@
 -- VAlex - contrat public de la page d'accueil publicitaire.
 --
+-- STATUT : APPLIQUEE en production le 25 novembre 2026.
+-- Version Supabase : 20261125113318 / ad_home_shop_name_contract.
+-- Ne pas rejouer ce fichier sans autorisation : il contient le DROP/CREATE
+-- historique de l'application. Le fichier est conserve comme source de verite
+-- du contrat deploye et comme reference de revue.
+--
 -- Objectif : ne jamais fabriquer d'annonce. `ad_home()` ne renvoie que les
 -- campagnes payantes reellement actives, approuvees, commencees et non
 -- expirees, avec le nom reel de la boutique pour l'attribution « de [nom] ».
@@ -7,16 +13,14 @@
 -- Cette migration remplace la version precedente dont le type de retour ne
 -- contenait pas shop_id/shop_name. Aucune donnee n'est modifiee.
 --
--- A appliquer dans une transaction. Le DROP est necessaire : PostgreSQL
--- refuse de changer le type de retour d'une fonction avec CREATE OR REPLACE.
+-- Le DROP est necessaire : PostgreSQL refuse de changer le type de retour
+-- d'une fonction avec CREATE OR REPLACE.
 -- Rollback : reappliquer la definition precedente (archivee dans
 -- sql/archive/ad_home_2026-11-23.sql) puis recharger le cache PostgREST.
 --
--- Verification apres application (lecture seule) :
---   select column_name, data_type
---     from information_schema.columns
---    where table_schema = 'public' and table_name = 'ad_home'
---    order by ordinal_position;
+-- Verification apres application (lecture seule). `ad_home` est une fonction :
+-- information_schema.columns ne la voit pas. Utiliser pg_get_function_result :
+--   select pg_get_function_result('public.ad_home()'::regprocedure);
 --   select has_function_privilege('anon', 'public.ad_home()', 'EXECUTE');
 --   select * from public.ad_home();
 -- Attendu : shop_id et shop_name presents, 0 ligne si aucune campagne payante

@@ -3,8 +3,7 @@
 ## 1. Objet
 
 Cette branche rend consultables les corrections realisees sur le depot public
-`princemacy/Valex-boutique-`. Elle ne fusionne rien, ne deploie rien et
-n'applique aucune migration en production.
+`princemacy/Valex-boutique-`. Elle ne fusionne rien et ne deploie rien.
 
 - Depot : `princemacy/Valex-boutique-` (public)
 - Branche : `fix/valex-p0-p3-20261124`
@@ -12,6 +11,11 @@ n'applique aucune migration en production.
 - Cible de revue : `main`
 - Pull request DRAFT : `https://github.com/princemacy/Valex-boutique-/pull/1`
 - Site concerne : `https://valexboutique.store`
+
+Deux migrations ont ete appliquees en production par une session anterieure,
+le 25 novembre 2026, avec autorisation du proprietaire. Cette passe les
+documente, aligne le depot public sur l'etat deploye et corrige la requete de
+verification erronee. Aucune migration n'a ete rejouee.
 
 ## 2. Commits de la branche
 
@@ -22,7 +26,8 @@ n'applique aucune migration en production.
 | `5da6eef` | `5da6eefb962c4393b0dbeff8a17a0a69034ceea1` | Tests : 16 controles site, SQL, CI et securite |
 | `b76f773` | `b76f7732a163bcd34c1b63f4d6e61c9adc4ce6f2` | CI et documentation : `verify.yml`, suppression de `publish.yml`, README, DEPLOYMENT, lockfile |
 
-Les commits de documentation de cette passation sont visibles avec
+La passe du 25 novembre 2026 ajoute les artefacts finance, les tests
+correspondants et cette mise a jour de passation. Son SHA est visible avec
 `git log -- HANDOFF_FOR_CHATGPT.md`.
 
 Aucun commit n'a ete pousse sur `main`. Aucun merge n'a ete effectue.
@@ -33,9 +38,14 @@ Aucun commit n'a ete pousse sur `main`. Aucun merge n'a ete effectue.
 
 - `site/pwa.js` : inscription unique du service worker, banniere Android et
   iOS, indicateur hors ligne, blocage des mutations Supabase hors ligne.
-- `sql/2026-11-24-ad-home-shop-name.sql` : migration preparee, non appliquee.
+- `sql/2026-11-24-ad-home-shop-name.sql` : contrat `ad_home` avec
+  `shop_id`/`shop_name`, APPLIQUE le 25/11/2026 (version `20261125113318`).
+- `sql/2026-11-25-secure-finance-access.sql` : durcissement finance APPLIQUE
+  le 25/11/2026 (version `20261125113651`).
 - `sql/archive/ad_home_2026-11-23.sql` : definition precedente pour rollback.
-- `tests/site.test.mjs` : 16 tests.
+- `sql/archive/finance_rls_rollback_2026-11-25.sql` : rollback finance
+  archive, NON APPLIQUE, avec avertissement sur la perte de securite.
+- `tests/site.test.mjs` : 18 tests.
 - `DEPLOYMENT.md` : deploiement Workers Builds et retour arriere.
 - `package-lock.json` : installation reproductible avec `npm ci`.
 
@@ -90,58 +100,79 @@ Aucun commit n'a ete pousse sur `main`. Aucun merge n'a ete effectue.
 8. **Erreurs** : les appels navigateur a `expire_pending_orders()` ont ete
    retires. Les erreurs utilisateur sont neutres avec un code `VX-XXXX` et les
    journaux sont masques.
+9. **Finance** : `fee_config` n'est plus lisible par `anon`. La lecture est
+   reservee a `authenticated` via `public.is_owner()` (admin/owner + AAL2).
+   `credit_hold_lines` et `pro_capacity_bonus_override` ne sont plus lisibles
+   directement par `anon` ni `authenticated`.
 
-## 5. Commandes executees et resultats
+## 5. Etat des migrations en production
 
-Toutes les commandes ont ete executees dans `/tmp/opencode/valex-public`.
+### 5.1 `ad_home` (version `20261125113318`)
 
-| Commande | Resultat | Preuve |
-| --- | --- | --- |
-| `npm ci --no-audit --no-fund` | PASS | 82 paquets installes depuis `package-lock.json` |
-| `npm run check` | PASS | 50 fichiers analyses, 45 textes, aucun secret, hash CSP valide, syntaxe OK |
-| `npm test` | PASS | 16 tests, 16 pass, 0 fail |
-| `WRANGLER_SEND_METRICS=false npm run dry-run` | PASS | 50 fichiers lus, 16,03 KiB, aucune publication |
-| Validation YAML de `verify.yml` | PASS | jobs `verify`, 6 etapes conformes |
-| `node --check` du script inline | PASS | aucune erreur de syntaxe |
-| `git diff --check` | PASS | aucune erreur d'espace |
-| Scan de secrets dans l'arbre | PASS | aucun jeton ; seules les mentions du role `service_role` dans le SQL et les tests |
-| `gh secret list` sur le depot public | PASS | 0 secret GitHub Actions |
-| Check-run Workers Builds sur `44bea72` | PASS | `Workers Builds: valexboutique` en `success` |
-| Check-run Verify sur `44bea72` | PASS | `verify` en `success` |
-| Check-run Workers Builds sur la branche | FAIL | echec immediat sur chaque push de branche, aucun deploiement observe |
-| Site public apres push de la branche | PASS | ancien hash CSP `sha256-UKNOT...` et prix HTG conserves, production inchangee |
-| Protection de `main` | Observation | branche non protegee au moment du controle |
+Statut : APPLIQUEE le 25 novembre 2026. Ne pas rejouer.
 
-## 6. Migration SQL non appliquee
-
-La migration `sql/2026-11-24-ad-home-shop-name.sql` n'a pas ete appliquee en
-production. Elle est livree pour revue et doit etre appliquee seulement apres
-autorisation explicite, sauvegarde verifiee et procedure de restauration
-connue.
-
-Elle est necessaire pour que le frontend recoive `shop_id` et `shop_name`. Tant
-qu'elle n'est pas appliquee, `ad_home()` ne renvoie pas ces colonnes et le
-frontend masque les publicites plutot que d'inventer une attribution.
-
-Rollback : reappliquer
-`sql/archive/ad_home_2026-11-23.sql`, puis recharger le cache PostgREST avec
-`notify pgrst, 'reload schema'`.
-
-Verification apres application, en lecture seule :
+Verification en lecture seule, executee depuis la session d'audit :
 
 ```sql
-select column_name, data_type
-  from information_schema.columns
- where table_schema = 'public' and table_name = 'ad_home'
- order by ordinal_position;
-
+select pg_get_function_result('public.ad_home()'::regprocedure);
 select has_function_privilege('anon', 'public.ad_home()', 'EXECUTE');
-
 select * from public.ad_home();
 ```
 
-Attendu : `shop_id` et `shop_name` presents, aucune erreur pour le role
-`anon`, et 0 ligne si aucune campagne payante active et approuvee n'existe.
+Preuves observees :
+
+- 11 colonnes de retour, dont `shop_id uuid` et `shop_name text` ;
+- `security definer`, `search_path=pg_catalog` ;
+- EXECUTE accorde a `anon`, `authenticated` et `service_role` ;
+- `ad_home()` renvoie 0 ligne : `shops = 0` et `ad_campaigns = 0` ;
+- 8 emplacements `ad_slots` actifs, tous de type paye, 0 emplacement maison.
+
+La requete precedente fondee sur `information_schema.columns` avec
+`table_name = 'ad_home'` etait erronee : `ad_home` est une fonction, pas une
+table. Elle est remplacee par `pg_get_function_result(...)` dans le fichier SQL
+et couverte par un test.
+
+### 5.2 Finance (version `20261125113651`)
+
+Statut : APPLIQUEE le 25 novembre 2026. Ne pas rejouer.
+
+Preuves observees :
+
+- `fee_config` : 4 lignes, 2 actives ; la colonne de statut est `active` ;
+- politique `fee_config_owner_aal2_select` presente pour `authenticated` avec
+  `public.is_owner()` ;
+- `anon` n'a plus SELECT sur `fee_config` ; `authenticated` conserve SELECT
+  sous la politique ;
+- `credit_hold_lines` et `pro_capacity_bonus_override` : plus de SELECT pour
+  `anon` ni `authenticated` ;
+- `public.is_owner()` = `has_role(['admin','owner']) AND current_aal()='aal2'`.
+
+Le rollback finance est archive dans
+`sql/archive/finance_rls_rollback_2026-11-25.sql`. Il n'est pas recommande :
+il redonne des lectures directes et supprime la politique AAL2. Il ne doit
+etre execute qu'en cas de panne confirmee, avec sauvegarde et autorisation
+explicite.
+
+## 6. Commandes executees et resultats
+
+Toutes les commandes de verification locale sont executees dans
+`/tmp/opencode/valex-public`.
+
+| Commande | Resultat | Preuve |
+| --- | --- | --- |
+| `npm ci --no-audit --no-fund` | PASS | installation depuis `package-lock.json` |
+| `npm run check` | PASS | fichiers analyses, textes, secrets, hash CSP, syntaxe |
+| `npm test` | PASS | 18 tests, 18 pass, 0 fail |
+| `WRANGLER_SEND_METRICS=false npm run dry-run` | PASS | build local, aucune publication |
+| Validation YAML de `verify.yml` | PASS | jobs et etapes conformes |
+| `node --check` du script inline | PASS | aucune erreur de syntaxe |
+| `git diff --check` | PASS | aucune erreur d'espace |
+| Scan de secrets dans l'arbre | PASS | aucun jeton ; seules les mentions du role `service_role` |
+| `gh secret list` sur le depot public | PASS | 0 secret GitHub Actions |
+| Check-run Verify sur la branche | PASS | `verify` en `success` |
+| Check-run Workers Builds sur la branche | FAIL | echec observe avant `previews_enabled=false` ; a reverifier apres le nouveau push |
+| Site public apres push de la branche | PASS | production inchangee, aucun deploiement de branche |
+| Protection de `main` | Observation | branche non protegee au moment du controle |
 
 ## 7. Deploiement
 
@@ -156,29 +187,28 @@ Attendu : `shop_id` et `shop_name` presents, aucune erreur pour le role
 
 ### Workers Builds sur la branche
 
-Chaque push sur `fix/valex-p0-p3-20261124` declenche un check-run
-`Workers Builds: valexboutique` qui echoue immediatement, en moins d'une
-seconde. Aucun deploiement GitHub n'est cree. Le site public conserve l'ancien
-hash CSP `sha256-UKNOT...` et les prix HTG, ce qui prouve que la production n'a
-pas change.
+Le dernier check observe avant la desactivation des previews echouait
+immediatement, en moins d'une seconde, sans deploiement GitHub cree. Le build
+concerne est `70daa653-4fb3-43a6-8636-07c909a8c015`, declenche le 25 novembre
+2026 a 11:18:58. Il est anterieur a la desactivation des previews.
 
-La cause exacte de cet echec n'a pas pu etre consultee : la session Cloudflare
-disponible est autorisee sur d'autres comptes, pas sur
-`19c96ea9b10d531ca3677e7bd3ee92a1`. Ce point est `BLOCKED` pour l'analyse des
-journaux. L'echec est immediat et reproductible, il ne ressemble pas a un echec
-de compilation. Avant merge, verifier les reglages Workers Builds (branche
-surveillee, previews, filtre de branches) pour eviter un check rouge inutile
-sur les pull requests.
+Le nouveau push de cette passe doit permettre de verifier si le correctif est
+effectif. Tant que le check reste rouge, la cause exacte reste `BLOCKED` :
+la session Cloudflare disponible n'a pas acces au compte
+`19c96ea9b10d531ca3677e7bd3ee92a1`.
 
 ## 8. Risques et points ouverts
 
-1. **Migration `ad_home` non appliquee** : les publicites restent masquees tant
-   que la migration n'est pas appliquee. Aucune donnee n'est inventee.
-2. **Google Identity Services** : NOT TESTED avec un compte Google reel. Le
+1. **Google Identity Services** : NOT TESTED avec un compte Google reel. Le
    nonce, le flux et la CSP sont verifies statiquement seulement.
-3. **Publicite reelle** : NOT TESTED, aucune campagne approuvee en base.
-4. **XSS navigateur** : NOT TESTED. Les tests ajoutes sont statiques. Une
+2. **Publicite reelle** : NOT TESTED, aucune campagne approuvee en base
+   (`ad_campaigns = 0`). Le contrat SQL est applique et verifie, l'affichage
+   reel avec une campagne reste a tester.
+3. **XSS navigateur** : NOT TESTED. Les tests ajoutes sont statiques. Une
    revue navigateur reste necessaire avant publication.
+4. **Session proprietaire MFA AAL2** : NOT TESTED. La politique finance est
+   verifiee en base ; l'affichage reel de `fee_config` dans la page
+   proprietaire avec une session AAL2 reste a tester.
 5. **Brevo, SMTP et DNS** : les anciennes cles sont compromises. Elles ne
    doivent pas etre utilisees ni testees. Regeneration et rotation par le
    proprietaire.
@@ -188,10 +218,9 @@ sur les pull requests.
    controle. Ajouter les checks requis est recommande avant merge.
 9. **`HTG` dans le JSON-LD** : `priceCurrency` reste `HTG` pour les moteurs de
    recherche, alors que l'interface est en GDS. Decision a confirmer.
-10. **Workers Builds sur les branches** : le check-run echoue immediatement
-    sur un push de branche, sans deploiement. La cause exacte est `BLOCKED`
-    faute d'acces au compte Cloudflare VAlex. Verifier la configuration avant
-    merge pour ne pas laisser un check rouge sur la PR.
+10. **Workers Builds sur les branches** : check rouge observe avant la
+    desactivation des previews. Reverifier sur le nouveau SHA ; si l'echec
+    persiste, analyser les reglages Workers Builds avant merge.
 
 ## 9. Taches restantes recommandees
 
@@ -202,8 +231,8 @@ sur les pull requests.
    de test.
 4. Creer une campagne publicitaire de test approuvee, verifier l'affichage du
    nom de boutique, puis la desactiver.
-5. Appliquer la migration `ad_home` apres autorisation, sauvegarde et
-   verification du rollback.
+5. Tester la page proprietaire avec une session MFA AAL2 et verifier que
+   `fee_config` se charge, puis que `anon` ne peut pas le lire.
 6. Proteger `main` avec les checks requis `verify` et `Workers Builds`.
 7. Faire tourner les cles Brevo compromises.
 8. Decider du rendu compact ou aere et du traitement de `HTG` dans le JSON-LD.

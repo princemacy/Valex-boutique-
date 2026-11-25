@@ -4870,7 +4870,7 @@ function audienceBlock(aud,all){
   } else {
     const subs=(AUD_RAYONS[aud]||[]).flatMap(rs=>{const r=catBySlug(rs);return r?subsOf(r.id).map(c=>({c,r})):[];});
     const cover=(c)=>{const x=all.filter(p=>p.category_slug===c.slug&&AUD_FILTER[aud](p)&&p.cover_path&&!p.is_demo).sort((a,b)=>(b.views||0)-(a.views||0))[0];return x?prodImg(x.cover_path):neutralTile(c.label);};
-    circles='<div class="subgrid enter">'+subs.map(({c,r})=>'<a class="circ" href="#/rayon/'+attr(r.slug)+'/'+c.slug+'"><span class="ci ci--sq"><img src="'+attr(cover(c))+'\" alt="" loading="lazy"></span><span>'+esc(c.label)+'</span></a>').join('')+'</div>';
+    circles='<div class="subgrid enter">'+subs.map(({c,r})=>'<a class="circ" href="#/rayon/'+attr(r.slug)+'/'+c.slug+'"><span class="ci ci--sq"><img src="'+attr(cover(c))+'" alt="" loading="lazy"></span><span>'+esc(c.label)+'</span></a>').join('')+'</div>';
   }
   return ban+tiles+circles;
 }
