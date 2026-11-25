@@ -106,6 +106,8 @@ Toutes les commandes ont ete executees dans `/tmp/opencode/valex-public`.
 | `gh secret list` sur le depot public | PASS | 0 secret GitHub Actions |
 | Check-run Workers Builds sur `44bea72` | PASS | `Workers Builds: valexboutique` en `success` |
 | Check-run Verify sur `44bea72` | PASS | `verify` en `success` |
+| Check-run Workers Builds sur la branche | FAIL | echec immediat sur chaque push de branche, aucun deploiement observe |
+| Site public apres push de la branche | PASS | ancien hash CSP `sha256-UKNOT...` et prix HTG conserves, production inchangee |
 | Protection de `main` | Observation | branche non protegee au moment du controle |
 
 ## 6. Migration SQL non appliquee
@@ -150,6 +152,22 @@ Attendu : `shop_id` et `shop_name` presents, aucune erreur pour le role
 - GitHub Actions ne deploie pas et ne demande aucun secret Cloudflare.
 - `publish.yml` a ete supprime pour eviter un second systeme de deploiement.
 
+### Workers Builds sur la branche
+
+Chaque push sur `fix/valex-p0-p3-20261124` declenche un check-run
+`Workers Builds: valexboutique` qui echoue immediatement, en moins d'une
+seconde. Aucun deploiement GitHub n'est cree. Le site public conserve l'ancien
+hash CSP `sha256-UKNOT...` et les prix HTG, ce qui prouve que la production n'a
+pas change.
+
+La cause exacte de cet echec n'a pas pu etre consultee : la session Cloudflare
+disponible est autorisee sur d'autres comptes, pas sur
+`19c96ea9b10d531ca3677e7bd3ee92a1`. Ce point est `BLOCKED` pour l'analyse des
+journaux. L'echec est immediat et reproductible, il ne ressemble pas a un echec
+de compilation. Avant merge, verifier les reglages Workers Builds (branche
+surveillee, previews, filtre de branches) pour eviter un check rouge inutile
+sur les pull requests.
+
 ## 8. Risques et points ouverts
 
 1. **Migration `ad_home` non appliquee** : les publicites restent masquees tant
@@ -168,6 +186,10 @@ Attendu : `shop_id` et `shop_name` presents, aucune erreur pour le role
    controle. Ajouter les checks requis est recommande avant merge.
 9. **`HTG` dans le JSON-LD** : `priceCurrency` reste `HTG` pour les moteurs de
    recherche, alors que l'interface est en GDS. Decision a confirmer.
+10. **Workers Builds sur les branches** : le check-run echoue immediatement
+    sur un push de branche, sans deploiement. La cause exacte est `BLOCKED`
+    faute d'acces au compte Cloudflare VAlex. Verifier la configuration avant
+    merge pour ne pas laisser un check rouge sur la PR.
 
 ## 9. Taches restantes recommandees
 
