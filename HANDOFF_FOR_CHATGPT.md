@@ -21,7 +21,9 @@ n'applique aucune migration en production.
 | `d1707d5` | `d1707d5bab2d4ce11f865c6934dc50afcf1f3d81` | SQL : migration `ad_home` avec `shop_id` et `shop_name`, archive de rollback |
 | `5da6eef` | `5da6eefb962c4393b0dbeff8a17a0a69034ceea1` | Tests : 16 controles site, SQL, CI et securite |
 | `b76f773` | `b76f7732a163bcd34c1b63f4d6e61c9adc4ce6f2` | CI et documentation : `verify.yml`, suppression de `publish.yml`, README, DEPLOYMENT, lockfile |
-| commit dedie | visible dans `git log -1` | Passation pour reprise par un autre agent |
+
+Les commits de documentation de cette passation sont visibles avec
+`git log -- HANDOFF_FOR_CHATGPT.md`.
 
 Aucun commit n'a ete pousse sur `main`. Aucun merge n'a ete effectue.
 
