@@ -124,7 +124,12 @@ Preuves observees :
 - 11 colonnes de retour, dont `shop_id uuid` et `shop_name text` ;
 - `security definer`, `search_path=pg_catalog` ;
 - EXECUTE accorde a `anon`, `authenticated` et `service_role` ;
-- `ad_home()` renvoie 0 ligne : `shops = 0` et `ad_campaigns = 0` ;
+- `ad_home()` renvoie 0 ligne : `ad_campaigns = 0` et la seule boutique
+  existante est `pending`, donc non approuvee ;
+- `shops` contient 1 ligne reelle : `is_demo=false`, `status=pending`,
+  `is_active=true`. Ce n'est pas une boutique fictive et elle n'apparait pas
+  via `ad_home()`. La cible de lancement a 0 boutique n'est pas atteinte ;
+  ne pas supprimer cette ligne sans autorisation du proprietaire ;
 - 8 emplacements `ad_slots` actifs, tous de type paye, 0 emplacement maison.
 
 La requete precedente fondee sur `information_schema.columns` avec
@@ -245,6 +250,11 @@ mises a jour avant la suppression de Node.js 20 sur les runners.
     aucune politique SELECT. RLS restant actif, il ne rétablit pas la lecture.
     Une restauration complete exige la definition de la politique anterieure,
     disponible seulement dans une sauvegarde.
+12. **Base de lancement** : `shops` contient 1 boutique reelle `pending`
+    (`is_demo=false`), alors que la cible annoncee est 0 boutique. Elle
+    n'apparait pas via `ad_home()` car elle n'est pas approuvee. Ne pas la
+    supprimer sans autorisation ; le proprietaire doit decider de la traiter
+    ou de la retirer par une procedure validee.
 
 ## 9. Taches restantes recommandees
 
@@ -262,8 +272,10 @@ mises a jour avant la suppression de Node.js 20 sur les runners.
 7. Mettre a jour `actions/checkout` et `actions/setup-node` pour retirer
    l'avertissement Node.js 20.
 8. Faire tourner les cles Brevo compromises.
-9. Decider du rendu compact ou aere et du traitement de `HTG` dans le JSON-LD.
-10. Merge et deploiement par le proprietaire, apres validation de la PR.
+9. Decider du sort de la boutique `pending` existante, sans suppression non
+   autorisee, pour respecter la cible de lancement a 0 boutique.
+10. Decider du rendu compact ou aere et du traitement de `HTG` dans le JSON-LD.
+11. Merge et deploiement par le proprietaire, apres validation de la PR.
 
 ## 10. Regles a conserver
 
