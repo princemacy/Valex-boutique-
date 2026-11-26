@@ -2199,7 +2199,7 @@ const V={
     const seq=(V._skSeq=(V._skSeq||0)+1);
     const pending=()=>{
       const vv=$('#view'); if(!vv)return false;
-      return [...vv.querySelectorAll('.sk, #feedL > .feed__item > .spin')]
+      return [...vv.querySelectorAll('.sk, #feedL > .feed__item > .spin, .msgs > .spin')]
         .some(el=>el.getClientRects().length>0);
     };
     if(pending()){

@@ -230,7 +230,7 @@ test("un chargement bloque propose Reessayer au lieu d'un skeleton infini", () =
   assert.match(html, /\.loadslow\{/);
   assert.match(html, /Le chargement prend plus de temps que prévu/);
   assert.match(html, /btn\.textContent='Réessayer'/);
-  assert.match(html, /querySelectorAll\('\.sk, #feedL > \.feed__item > \.spin'\)/);
+  assert.match(html, /querySelectorAll\('\.sk, #feedL > \.feed__item > \.spin, \.msgs > \.spin'\)/);
   assert.match(html, /Aucune vidéo disponible/);
 });
 
