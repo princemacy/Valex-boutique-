@@ -1,198 +1,98 @@
-// VAlex — interface du programme partenaire dans le SPA existant.
-// Aucune création de compte, de boutique, de permission ou donnée financière.
+// VAlex — interface programme partenaire dans le SPA existant.
+// Aucune autorisation locale n'est considérée comme preuve; le serveur reste juge.
 import * as API from "./influencer-api.js";
+import { OPTIONAL_PERMISSIONS, BASE_CAPABILITIES, normalizeMerchantDelegations } from "./influencer-core.mjs";
 
 const PARTNER_ROUTE = "#/espace-partenaire";
 const INVITE_ROUTE = "#/invitation";
-const state = { dashboard: null, invitations: [], shops: [], loading: false, error: "", notice: "", session: null, token: null, invitation: null };
+const DELEGATIONS_ROUTE = "#/acces-delegues";
+const OPTIONAL_LABELS = Object.freeze({ stock_manage: "Gérer les stocks", prices_manage: "Modifier les prix", orders_manage: "Gérer les commandes", delivery_manage: "Modifier les frais de livraison", messages_reply: "Répondre aux messages" });
+const BASE_LABELS = Object.freeze({ products_create: "Créer des produits", products_edit: "Modifier des produits", products_publish: "Publier des produits", ai_assist: "Utiliser l’assistance IA", referral_tools: "Utiliser les outils de parrainage personnels" });
+const state = { dashboard: null, invitations: [], shops: [], delegations: [], shopPermissions: new Map(), activity: new Map(), loading: false, error: "", notice: "", session: null, token: null, invitation: null };
 
 function el(tag, text = "", cls = "") { const n = document.createElement(tag); if (text !== "") n.textContent = text; if (cls) n.className = cls; return n; }
-function btn(text, cls, action) { const b = el("button", text, cls); b.type = "button"; b.addEventListener("click", action); return b; }
-function msg(text, kind = "info") { const p = el("p", text, `influencer-message influencer-message--${kind}`); p.setAttribute("role", kind === "error" ? "alert" : "status"); return p; }
-function card(title, description = "") { const s = el("section", "", "card influencer-card"), h = el("div", "", "card__h"), b = el("div", "", "card__b"); h.appendChild(el("h2", title, "t-h3")); s.append(h, b); if (description) b.appendChild(el("p", description, "t-sub")); return { s, b }; }
-function dateLabel(value) { if (!value) return "—"; const d = new Date(value); return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("fr-FR"); }
-function head(title, subtitle) { const h = el("header", "", "phead influencer-head"), t = el("div", "", "phead__t"); t.append(el("h1", title), el("p", subtitle)); h.appendChild(t); return h; }
-function metric(label, value) { const n = el("div", "", "influencer-metric"); n.append(el("strong", value == null ? "—" : String(value)), el("span", label)); return n; }
+function btn(text, cls, action) { const n = el("button", text, cls); n.type = "button"; n.addEventListener("click", action); return n; }
+function message(text, kind = "info") { const n = el("p", text, `influencer-message influencer-message--${kind}`); n.setAttribute("role", kind === "error" ? "alert" : "status"); return n; }
+function card(title, description = "") { const section = el("section", "", "card influencer-card"), header = el("div", "", "card__h"), body = el("div", "", "card__b"); header.appendChild(el("h2", title, "t-h3")); section.append(header, body); if (description) body.appendChild(el("p", description, "t-sub")); return { section, body }; }
+function dateLabel(value) { if (!value) return "—"; const d = new Date(value); return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("fr-FR"); }
+function pageHead(title, subtitle) { const h = el("header", "", "phead influencer-head"), t = el("div", "", "phead__t"); t.append(el("h1", title), el("p", subtitle)); h.appendChild(t); return h; }
 function status(label) { return el("span", label || "Statut inconnu", "influencer-status"); }
+async function currentSession() { const auth = window.sb?.auth; if (!auth?.getUser) return null; const { data, error } = await auth.getUser(); if (error || !data?.user) return null; return { id: data.user.id, email: data.user.email || null, confirmed: Boolean(data.user.email_confirmed_at) }; }
+function route() { const hash = String(location.hash || ""); if (hash.startsWith("#/invitation/")) { state.token = hash.slice("#/invitation/".length).split(/[?#]/)[0] || null; history.replaceState(null, "", location.pathname + location.search + INVITE_ROUTE); return INVITE_ROUTE; } return [PARTNER_ROUTE, INVITE_ROUTE, DELEGATIONS_ROUTE].includes(hash) ? hash : ""; }
+function fail(error) { state.error = error?.userMessage || "Le service partenaire n’est pas disponible. Aucune action n’a été confirmée."; state.notice = ""; }
+function setSuccess(result, text) { if (!result || result.ok !== true) throw new Error("Le serveur n’a pas confirmé l’opération."); state.notice = text; state.error = ""; }
 
-async function session() {
-  const sb = window.sb;
-  if (!sb?.auth?.getUser) return null;
-  const { data, error } = await sb.auth.getUser();
-  if (error || !data?.user) return null;
-  return { id: data.user.id, email: data.user.email || null, confirmed: Boolean(data.user.email_confirmed_at) };
-}
-function parseRoute() {
-  const hash = String(location.hash || "");
-  if (hash.startsWith("#/invitation/")) {
-    state.token = hash.slice("#/invitation/".length).split(/[?#]/)[0] || null;
-    history.replaceState(null, "", location.pathname + location.search + INVITE_ROUTE);
-    return INVITE_ROUTE;
-  }
-  if (hash === INVITE_ROUTE) return INVITE_ROUTE;
-  if (hash === PARTNER_ROUTE) return PARTNER_ROUTE;
-  return "";
-}
-function showError(error) {
-  state.error = error?.userMessage || "Le programme partenaire est indisponible. Aucune action n’a été confirmée.";
-  state.notice = "";
-}
-
-async function mutate(operation, success) {
-  try {
-    const result = await operation();
-    if (!result || result.ok !== true) throw new Error("Opération non confirmée par le serveur.");
-    state.notice = success; state.error = "";
-    await refreshPartner();
-  } catch (error) { showError(error); renderPartner(); }
-}
-
-function invitationsView(host) {
-  if (!state.invitations.length) { host.appendChild(msg("Aucune invitation réelle renvoyée par le serveur.", "empty")); return; }
+function renderInvitations(host) {
+  if (!state.invitations.length) { host.appendChild(message("Aucune invitation réelle renvoyée par le serveur.", "empty")); return; }
   const list = el("ul", "", "influencer-list");
-  for (const invite of state.invitations) {
-    const row = el("li", "", "influencer-row"), main = el("div", "", "influencer-row__main");
-    main.append(el("strong", invite.email || "Adresse masquée"), status(invite.statusLabel));
-    main.appendChild(el("span", `Créée le ${dateLabel(invite.createdAt)} · expire le ${dateLabel(invite.expiresAt)}`, "t-small")); row.appendChild(main);
-    if (["pending", "send_error"].includes(invite.status)) row.appendChild(btn("Renvoyer", "btn btn--sm", () => mutate(() => API.resendInvitation(invite.id), "Renvoi confirmé par le serveur.")));
-    if (invite.status === "pending") row.appendChild(btn("Annuler", "btn btn--sm btn--danger", () => { if (window.confirm("Annuler cette invitation ? Cette action sera vérifiée par le serveur.")) mutate(() => API.cancelInvitation(invite.id), "Annulation confirmée par le serveur."); }));
+  for (const invite of state.invitations) { const row = el("li", "", "influencer-row"), main = el("div", "", "influencer-row__main"); main.append(el("strong", invite.email || "Adresse masquée"), status(invite.statusLabel), el("span", `Créée le ${dateLabel(invite.createdAt)} · expire le ${dateLabel(invite.expiresAt)}`, "t-small")); row.appendChild(main);
+    if (["pending", "send_error"].includes(invite.status)) row.appendChild(btn("Renvoyer", "btn btn--sm", () => runMutation(() => API.resendInvitation(invite.id), "Renvoi confirmé par le backend.")));
+    if (invite.status === "pending") row.appendChild(btn("Annuler", "btn btn--sm btn--danger", () => { if (window.confirm("Annuler cette invitation ? Le serveur vérifiera les droits et l’état.")) runMutation(() => API.cancelInvitation(invite.id), "Annulation confirmée par le backend."); }));
     list.appendChild(row);
   }
   host.appendChild(list);
 }
-
-function shopsView(host) {
-  if (!state.shops.length) { host.appendChild(msg("Aucune boutique accompagnée n’a été renvoyée par le serveur.", "empty")); return; }
+function renderPartnerShops(host) {
+  if (!state.shops.length) { host.appendChild(message("Aucune boutique accompagnée renvoyée par le serveur.", "empty")); return; }
   const list = el("ul", "", "influencer-list");
-  for (const shop of state.shops) {
-    const row = el("li", "", "influencer-row"), main = el("div", "", "influencer-row__main");
-    main.append(el("strong", shop.name), status(shop.statusLabel));
-    main.appendChild(el("span", `Lancement : ${dateLabel(shop.launchedAt)} · Produits : ${shop.productCount == null ? "—" : shop.productCount}`, "t-small"));
-    if (shop.activity) main.appendChild(el("span", shop.activity, "t-small"));
-    main.appendChild(el("span", `Délégation : ${shop.delegationActive == null ? "indisponible" : shop.delegationActive ? "active" : "révoquée"}`, "t-small"));
-    row.appendChild(main); list.appendChild(row);
+  for (const shop of state.shops) { const row = el("li", "", "influencer-row"), main = el("div", "", "influencer-row__main"); main.append(el("strong", shop.name), status(shop.statusLabel), el("span", `Lancement : ${dateLabel(shop.launchedAt)} · Produits : ${shop.productCount == null ? "—" : shop.productCount}`, "t-small")); if (shop.activity) main.appendChild(el("span", shop.activity, "t-small")); row.appendChild(main);
+    row.appendChild(btn("Voir mes droits", "btn btn--sm", () => { location.hash = `${PARTNER_ROUTE}/boutique/${encodeURIComponent(shop.id)}`; })); list.appendChild(row);
   }
   host.appendChild(list);
 }
-
+function renderGrantedRights(host, shopId) {
+  const permissions = state.shopPermissions.get(shopId);
+  if (!permissions) { host.appendChild(message("Les droits effectifs sont indisponibles. Aucune opération déléguée ne doit être considérée comme autorisée.", "info")); return; }
+  host.appendChild(status(permissions.delegationActive === true ? "Délégation active selon le serveur" : permissions.delegationActive === false ? "Délégation révoquée selon le serveur" : "État de délégation inconnu"));
+  host.appendChild(el("p", `Dernière activité : ${dateLabel(permissions.lastActivityAt)}`, "t-small"));
+  const list = el("ul", "", "influencer-steps");
+  for (const key of BASE_CAPABILITIES) list.appendChild(el("li", `${BASE_LABELS[key]} : ${permissions.base[key] ? "accordé" : "non accordé"}`));
+  for (const key of OPTIONAL_PERMISSIONS) list.appendChild(el("li", `${OPTIONAL_LABELS[key]} : ${permissions.optional[key] === true ? "accordé" : permissions.optional[key] === false ? "non accordé" : "indisponible"}`));
+  host.appendChild(list);
+  host.appendChild(message("Les droits affichés sont informatifs. Chaque opération produit/commande doit être revérifiée par le backend; l’interface ne peut pas accorder ni garantir un accès.", "info"));
+  const products = card("Outils de produits", "La gestion doit réutiliser les écrans VAlex existants et être contrôlée côté serveur pour chaque opération.");
+  products.body.appendChild(message("Le parcours produit existant et ses contrôles de délégation n’ont pas été vérifiés. Aucun bouton d’édition n’est activé tant que le serveur ne confirme pas l’autorisation effective.", "info"));
+  host.appendChild(products.section);
+}
 function renderPartner() {
   const host = document.getElementById("view"); if (!host) return;
-  const page = el("div", "", "page influencer-page");
-  page.appendChild(head("ESPACE PARTENAIRE", "Données réelles du programme partenaire. Aucun chiffre n’est calculé dans le navigateur."));
-  if (state.error) page.appendChild(msg(state.error, "error"));
-  if (state.notice) page.appendChild(msg(state.notice, "success"));
-  if (state.loading) page.appendChild(msg("Chargement des informations confirmées par le serveur…"));
-
-  const d = state.dashboard;
-  if (d) {
-    const metrics = el("div", "", "stats influencer-stats");
-    metrics.append(metric("Invitations envoyées", d.counts.invitationsSent), metric("Invitations acceptées", d.counts.invitationsAccepted), metric("Boutiques en préparation", d.counts.shopsPreparing), metric("Boutiques approuvées", d.counts.shopsApproved), metric("Boutiques suspendues", d.counts.shopsSuspended), metric("Ventes éligibles", d.counts.eligibleSales));
-    page.appendChild(metrics);
-    if (d.programStatus !== "active") page.appendChild(msg("Votre statut partenaire actif n’est pas confirmé par le serveur. L’envoi reste indisponible.", "info"));
-  } else if (!state.loading && !state.error) page.appendChild(msg("Les données du tableau de bord ne sont pas disponibles.", "info"));
-
-  const inviteCard = card("Inviter un commerçant", "Le lien est géré par le backend. Sa validité est indiquée par les données réelles renvoyées.");
-  const form = el("form", "", "influencer-form"), label = el("label", "Adresse email du commerçant"), input = el("input");
-  label.htmlFor = "influencerInviteEmail"; input.id = "influencerInviteEmail"; input.type = "email"; input.required = true; input.maxLength = 254; input.autocomplete = "email"; input.placeholder = "nom@exemple.ht";
-  const charter = el("label", "", "check"); const accepted = el("input"); accepted.type = "checkbox"; accepted.disabled = !(d && d.programStatus === "active" && d.charterAccepted === true && d.charterVersion); charter.append(accepted, el("span", d?.charterAccepted === true ? `Charte acceptée : ${d.charterVersion || "version serveur"}` : "Acceptation obligatoire de la charte, confirmée par le serveur avant le premier envoi."));
-  const send = el("button", "Envoyer l’invitation", "btn btn--pri"); send.type = "submit"; send.disabled = accepted.disabled;
-  form.append(label, input, charter, send);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault(); if (!accepted.checked) return;
-    send.disabled = true; send.textContent = "Envoi en cours…";
-    try { const result = await API.sendInvitation(input.value); if (result?.ok !== true) throw new Error("Envoi non confirmé."); state.notice = "L’envoi de l’invitation a été confirmé par le serveur."; state.error = ""; await refreshPartner(); } catch (error) { showError(error); renderPartner(); } finally { send.disabled = !(d && d.programStatus === "active" && d.charterAccepted === true); }
-  });
-  inviteCard.b.appendChild(form); inviteCard.b.appendChild(msg("Les fonctions d’envoi ne sont pas vérifiées tant que Supabase ne les a pas installées. Le formulaire ne confirme rien sans réponse backend.", "info")); page.appendChild(inviteCard.s);
-
-  const invitationCard = card("Liste des invitations"); invitationsView(invitationCard.b); page.appendChild(invitationCard.s);
-  const shopCard = card("Boutiques accompagnées", "La confidentialité de chaque boutique dépend du statut réel renvoyé par le serveur."); shopsView(shopCard.b); page.appendChild(shopCard.s);
-
-  const commissionCard = card("Commissions", "Les données doivent venir uniquement du portefeuille et des fonctions financières existants."); commissionCard.b.appendChild(msg("Commissions en attente, disponibles et ventes éligibles : données non installées ou non vérifiées. Aucun montant n’est calculé ici.", "info")); page.appendChild(commissionCard.s);
-  host.replaceChildren(page);
-}
-
-async function verifyInvitation() {
-  if (!state.token) return;
-  state.loading = true; state.error = ""; renderInvitation();
-  try { state.session = await session(); state.invitation = await API.verifyInvitation(state.token); } catch (error) { showError(error); } finally { state.loading = false; renderInvitation(); }
-}
-
-function renderInvitation() {
-  const host = document.getElementById("view"); if (!host) return;
-  const page = el("div", "", "page influencer-page"); page.append(head("Invitation d’un commerçant", "Votre compte, votre boutique et votre mot de passe restent sous votre identité."));
-  if (state.loading) page.appendChild(msg("Vérification du lien auprès du serveur…"));
-  if (state.error) page.appendChild(msg(state.error, "error"));
-  if (state.notice) page.appendChild(msg(state.notice, "success"));
-
-  const intro = card("Réception sécurisée", "Le backend vérifie le lien, l’adresse email, l’identité Auth et la charte.");
-  intro.b.appendChild(el("p", "Si vous possédez déjà un compte, connectez-vous avec ce compte. Aucun deuxième compte Auth ne sera créé.", "influencer-callout"));
-  intro.b.appendChild(btn("Se connecter avec mon compte VAlex", "btn btn--pri", () => { location.hash = "#/compte"; })); page.appendChild(intro.s);
-
-  if (state.invitation) {
-    const verify = card("Lien vérifié", "Aucune réussite de création n’est affichée sans confirmation Supabase.");
-    const invitation = state.invitation;
-    verify.b.appendChild(status(invitation.status_label || (invitation.valid ? "Lien vérifié" : "Lien invalide ou expiré")));
-    if (invitation.expires_at) verify.b.appendChild(el("p", `Valable jusqu’au ${dateLabel(invitation.expires_at)}.`, "t-small"));
-    if (!state.session) verify.b.appendChild(msg("Connexion requise avec le compte correspondant à l’invitation confirmée.", "info"));
-    else if (invitation.valid === true && state.session.confirmed) {
-      const charter = card("Accepter la charte de délégation", "Vous gardez la propriété de votre boutique. L’influenceur agit seulement dans les limites autorisées.");
-      const steps = el("ol", "", "influencer-steps"); ["Le marchand reste propriétaire du compte et de la boutique.", "L’influenceur ne doit jamais détourner les paiements.", "Les fausses commandes et fausses boutiques sont interdites.", "La révocation doit prendre effet immédiatement; la relation commerciale reste distincte."].forEach((text) => steps.appendChild(el("li", text)));
-      charter.b.appendChild(steps);
-      const label = el("label", "", "check"), check = el("input"); check.type = "checkbox"; label.append(check, el("span", `J’accepte la charte version ${invitation.charter_version || "non fournie"}.`)); charter.b.appendChild(label);
-      const accept = btn("Accepter l’invitation", "btn btn--pri", async () => {
-        if (!check.checked || !invitation.charter_version) return; accept.disabled = true;
-        try { const result = await API.acceptInvitation(state.token, { charterVersion: invitation.charter_version, charterAccepted: true }); if (result?.ok !== true) throw new Error("Acceptation non confirmée."); state.notice = "L’acceptation a été enregistrée par le serveur pour votre compte existant."; state.token = null; state.invitation = null; renderInvitation(); } catch (error) { showError(error); renderInvitation(); }
-      }); accept.disabled = !invitation.charter_version; charter.b.appendChild(accept); verify.b.appendChild(charter.s);
-    }
-    page.appendChild(verify.s);
-  } else if (!state.loading) page.appendChild(msg("Ouvrez un lien d’invitation reçu par email. Aucun lien valide ou expiré n’est simulé dans cette interface.", "info"));
-
-  const launch = card("Préparation de la boutique", "Étapes devant être confirmées dans les parcours serveur existants.");
-  const steps = el("ol", "", "influencer-steps"); ["Informations de la boutique", "Livraison et moyens de paiement", "Véritable produit ajouté", "Droits de l’influenceur vérifiés", "Soumission à la validation administrative"].forEach((text) => steps.appendChild(el("li", text)));
-  launch.b.appendChild(steps); launch.b.appendChild(msg("Le backend de création/lancement n’est pas installé. Aucun avancement ni validation n’est déclaré.", "info")); page.appendChild(launch.s);
-  host.replaceChildren(page);
-}
-
-async function refreshPartner() {
-  state.loading = true; state.error = ""; renderPartner();
-  try { state.session = await session(); const [d, i, s] = await Promise.all([API.loadDashboard(), API.loadInvitations(), API.loadAccompaniedShops()]); state.dashboard = d; state.invitations = i; state.shops = s; } catch (error) { showError(error); } finally { state.loading = false; renderPartner(); }
-}
-
-async function loadBadgeSettings(host) {
-  const c = card("Badge public facultatif", "Le marchand choisit sa visibilité. Le nom public doit être validé par le backend.");
-  try {
-    const delegations = await API.loadMerchantDelegations();
-    if (!Array.isArray(delegations) || !delegations.length) c.b.appendChild(msg("Aucune délégation réelle disponible.", "empty"));
-    for (const row of delegations || []) {
-      const line = el("div", "", "influencer-row"), toggle = el("input"), name = row.shop_name || row.name || "Boutique";
-      toggle.type = "checkbox"; toggle.checked = row.public_badge_visible === true; toggle.disabled = typeof row.public_badge_visible !== "boolean";
-      toggle.addEventListener("change", async () => { toggle.disabled = true; try { await API.setPublicBadge(row.shop_id || row.id, toggle.checked); state.notice = "Choix du badge confirmé par le serveur."; } catch (error) { toggle.checked = !toggle.checked; showError(error); } finally { toggle.disabled = false; } });
-      const label = el("label", "", "check"); label.append(toggle, el("span", `Afficher « Boutique lancée avec [nom validé] » — ${name}`)); line.appendChild(label); c.b.appendChild(line);
-    }
-  } catch (error) { c.b.appendChild(msg(error?.userMessage || "Le réglage du badge n’est pas disponible côté serveur.", "info")); }
-  host.appendChild(c.s);
-}
-
-function navLink() {
-  const nav = document.querySelector(".nav"); if (!nav || document.getElementById("valexInfluencerNav")) return;
-  const a = el("a", "ESPACE PARTENAIRE", "item"); a.id = "valexInfluencerNav"; a.href = PARTNER_ROUTE;
-  const foot = nav.querySelector(".nav__foot") || nav; foot.appendChild(a);
-}
-
-async function mount() {
-  navLink();
-  const route = parseRoute();
-  if (route === PARTNER_ROUTE) await refreshPartner();
-  if (route === INVITE_ROUTE) {
-    state.session = await session();
-    if (state.token) await verifyInvitation(); else renderInvitation();
+  const detail = String(location.hash || "").match(/^#\/espace-partenaire\/boutique\/([0-9a-f-]{36})$/i);
+  const page = el("div", "", "page influencer-page"); page.appendChild(pageHead("ESPACE PARTENAIRE", "Suivi des invitations et boutiques associés à votre session VAlex."));
+  if (state.error) page.appendChild(message(state.error, "error")); if (state.notice) page.appendChild(message(state.notice, "success")); if (state.loading) page.appendChild(message("Chargement des informations confirmées par le serveur…"));
+  if (detail) { const id = detail[1]; const rights = card("Droits accordés par le marchand"); renderGrantedRights(rights.body, id); page.appendChild(rights.section); }
+  else {
+    if (state.dashboard) { const d = state.dashboard, stats = el("div", "", "stats influencer-stats"); [["Invitations envoyées",d.counts.invitationsSent],["Invitations acceptées",d.counts.invitationsAccepted],["Boutiques en préparation",d.counts.shopsPreparing],["Boutiques approuvées",d.counts.shopsApproved],["Boutiques suspendues",d.counts.shopsSuspended],["Ventes éligibles",d.counts.eligibleSales]].forEach(([label,value]) => { const m=el("div","","influencer-metric"); m.append(el("strong",value==null?"—":String(value)),el("span",label)); stats.appendChild(m); }); page.appendChild(stats); if (d.programStatus !== "active") page.appendChild(message("Le serveur ne confirme pas un statut partenaire actif; les mutations restent indisponibles.", "info")); }
+    const invite = card("Inviter un commerçant", "La réponse d’envoi et l’expiration doivent être confirmées par le backend."); const form=el("form","","influencer-form"), label=el("label","Adresse email du commerçant"), input=el("input"); label.htmlFor="influencerInviteEmail"; Object.assign(input,{id:"influencerInviteEmail",type:"email",required:true,maxLength:254,autocomplete:"email",placeholder:"nom@exemple.ht"}); const checkLabel=el("label","","check"), check=el("input"); check.type="checkbox"; check.disabled=!(state.dashboard?.programStatus==="active"&&state.dashboard?.charterAccepted===true); checkLabel.append(check,el("span",state.dashboard?.charterVersion?`Charte acceptée : ${state.dashboard.charterVersion}`:"Charte/version non confirmée par le backend.")); const submit=el("button","Envoyer l’invitation","btn btn--pri"); submit.type="submit"; submit.disabled=check.disabled; form.append(label,input,checkLabel,submit); form.addEventListener("submit",async e=>{e.preventDefault();if(!check.checked)return;submit.disabled=true;submit.textContent="Envoi en cours…";try{const result=await API.sendInvitation(input.value);setSuccess(result,"Invitation envoyée par le backend.");await refreshPartner();}catch(err){fail(err);renderPartner();}finally{submit.disabled=true;submit.textContent="Envoyer l’invitation";}}); invite.body.append(form,message("Aucune invitation fictive. Si la fonction backend manque, l’envoi échoue sans confirmation.","info")); page.appendChild(invite.section);
+    const invites=card("Liste des invitations");renderInvitations(invites.body);page.appendChild(invites.section);
+    const shops=card("Boutiques accompagnées");renderPartnerShops(shops.body);page.appendChild(shops.section);
+    const commission=card("Commissions", "Aucun nouveau portefeuille ou calcul client.");commission.body.appendChild(message("Commissions non affichées dans cette interface; seuls les systèmes financiers existants peuvent fournir des valeurs.","info"));page.appendChild(commission.section);
   }
+  host.replaceChildren(page);
 }
-
-window.addEventListener("hashchange", () => {
-  const route = parseRoute();
-  if (route === PARTNER_ROUTE) refreshPartner();
-  else if (route === INVITE_ROUTE) { if (state.token) verifyInvitation(); else { session().then((value) => { state.session = value; renderInvitation(); }); } }
-});
-
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true }); else mount();
+function renderDelegationPermissions(host, delegation) {
+  const panel=card("Permissions facultatives", "Le propriétaire peut modifier uniquement ces permissions non sensibles. Le serveur doit appliquer le changement avant toute opération ultérieure.");
+  const permissions=delegation.permissions || {};
+  for(const key of OPTIONAL_PERMISSIONS){const label=el("label","","check influencer-permission"), input=el("input");input.type="checkbox";input.checked=permissions[key]===true;input.disabled=typeof permissions[key]!=="boolean"||delegation.delegationActive!==true;label.append(input,el("span",OPTIONAL_LABELS[key]));input.addEventListener("change",async()=>{input.disabled=true;try{const result=await API.updateShopPermissions(delegation.shopId,{[key]:input.checked});setSuccess(result,"Permission enregistrée par le backend.");await refreshDelegations();}catch(error){fail(error);renderDelegations();}});panel.body.appendChild(label);}
+  panel.body.appendChild(message("Paiements, destinations MonCash/NatCash, coordonnées bancaires, portefeuille, retraits, identité, compte propriétaire, rôles administratifs et sécurité ne sont jamais délégables.","info"));host.appendChild(panel.section);
+}
+function renderDelegations() {
+  const host=document.getElementById("view");if(!host)return;const page=el("div","","page influencer-page");page.appendChild(pageHead("ACCÈS DÉLÉGUÉS","Le propriétaire conserve les droits et peut révoquer l’accès."));
+  if(state.error)page.appendChild(message(state.error,"error"));if(state.notice)page.appendChild(message(state.notice,"success"));
+  if(!state.delegations.length)page.appendChild(message(state.loading?"Chargement des délégations…":"Aucune délégation réelle renvoyée par le serveur.","info"));
+  for(const item of state.delegations){const section=card(item.shopName,`Influenceur : ${item.influencerPublicName||"Nom public indisponible"}`),meta=el("div","","influencer-row__main");meta.append(status(item.delegationActive===true?"Accès actif":item.delegationActive===false?"Révoqué":"État inconnu"),el("span",`Dernière activité : ${dateLabel(item.lastActivityAt)}`,"t-small"));section.body.appendChild(meta);
+    const base=card("Droits de base accordés");const baseList=el("ul","","influencer-steps");for(const key of BASE_CAPABILITIES)baseList.appendChild(el("li",`${BASE_LABELS[key]} : ${item.basePermissions[key]===true?"accordé":"indisponible"}`));base.body.appendChild(baseList);section.body.appendChild(base.section);
+    renderDelegationPermissions(section.body,item);
+    const history=card("Historique des activités");const records=state.activity.get(item.shopId);if(!records)history.body.appendChild(btn("Charger l’historique","btn btn--sm",async()=>{try{state.activity.set(item.shopId,await API.loadShopActivity(item.shopId));renderDelegations();}catch(error){fail(error);renderDelegations();}}));else if(!records.length)history.body.appendChild(message("Aucune activité réelle renvoyée par le serveur.","empty"));else{const list=el("ul","","influencer-steps");for(const event of records)list.appendChild(el("li",`${event.label} · ${dateLabel(event.createdAt)}${event.summary?` — ${event.summary}`:""}`));history.body.appendChild(list);}section.body.appendChild(history.section);
+    const revoke=btn(item.delegationActive===true?"Révoquer immédiatement l’accès":"Accès non actif","btn btn--danger",async()=>{if(item.delegationActive!==true)return;if(!window.confirm(`Révoquer l’accès de ${item.influencerPublicName||"cet influenceur"} à ${item.shopName} ? Les opérations suivantes doivent être refusées par Supabase. L’historique et l’attribution de parrainage sont conservés.`))return;revoke.disabled=true;try{const result=await API.revokeShopDelegation(item.shopId,true);setSuccess(result,"Révocation confirmée par le serveur.");await refreshDelegations();}catch(error){fail(error);renderDelegations();}});revoke.disabled=item.delegationActive!==true;section.body.appendChild(revoke);page.appendChild(section.section);
+  }
+  page.appendChild(message("L’interface ne peut pas sécuriser les mutations. Les RPC de mise à jour et de révocation doivent contrôler côté serveur l’identité du propriétaire, la permission et le statut actif à chaque requête.","info"));host.replaceChildren(page);
+}
+async function refreshDelegations(){state.loading=true;state.error="";renderDelegations();try{state.session=await currentSession();const rows=await API.loadMerchantDelegations();state.delegations=normalizeMerchantDelegations(rows);}catch(error){fail(error);}finally{state.loading=false;renderDelegations();}}
+async function refreshPartner(){state.loading=true;state.error="";renderPartner();try{state.session=await currentSession();const [d,i,s]=await Promise.all([API.loadDashboard(),API.loadInvitations(),API.loadAccompaniedShops()]);state.dashboard=d;state.invitations=i;state.shops=s;const pairs=await Promise.all(s.map(async shop=>[shop.id,await API.loadShopPermissions(shop.id).catch(()=>null)]));state.shopPermissions=new Map(pairs.filter(([,p])=>p));}catch(error){fail(error);}finally{state.loading=false;renderPartner();}}
+async function verifyInvitation(){if(!state.token)return;state.loading=true;renderInvitation();try{state.session=await currentSession();state.invitation=await API.verifyInvitation(state.token);}catch(error){fail(error);}finally{state.loading=false;renderInvitation();}}
+function renderInvitation(){const host=document.getElementById("view");if(!host)return;const page=el("div","","page influencer-page");page.appendChild(pageHead("Invitation d’un commerçant","Votre compte et votre boutique restent sous votre identité."));if(state.error)page.appendChild(message(state.error,"error"));if(state.loading)page.appendChild(message("Vérification auprès du serveur…"));const box=card("Invitation", "L’email confirmé et l’identité Auth sont vérifiés côté serveur.");box.body.appendChild(message("Possédez-vous déjà un compte VAlex ? Connectez-vous avec celui-ci. Aucun compte Auth secondaire ne sera créé.","info"));box.body.appendChild(btn("Se connecter avec mon compte VAlex","btn btn--pri",()=>{location.hash="#/compte";}));if(state.invitation){box.body.appendChild(status(state.invitation.status_label||"État renvoyé par le backend"));if(!state.session)box.body.appendChild(message("Une session Auth existante est requise pour accepter l’invitation.","info"));else if(state.invitation.valid===true&&state.session.confirmed){const check=el("input");check.type="checkbox";const label=el("label","","check");label.append(check,el("span",`J’accepte la charte ${state.invitation.charter_version||"(version indisponible)"}.`));box.body.appendChild(label);const accept=btn("Accepter l’invitation","btn btn--pri",async()=>{if(!check.checked||!state.invitation.charter_version)return;accept.disabled=true;try{const res=await API.acceptInvitation(state.token,{charterVersion:state.invitation.charter_version,charterAccepted:true});setSuccess(res,"Acceptation confirmée par le serveur.");state.token=null;renderInvitation();}catch(error){fail(error);renderInvitation();}});accept.disabled=!state.invitation.charter_version;box.body.appendChild(accept);}}else if(!state.loading)box.body.appendChild(message("Lien non vérifié ou backend indisponible. Aucune boutique ni aucun compte n’a été créé.","info"));page.appendChild(box.section);host.replaceChildren(page);}
+function render(){const r=route();if(r===PARTNER_ROUTE||String(location.hash).startsWith(`${PARTNER_ROUTE}/boutique/`))renderPartner();else if(r===DELEGATIONS_ROUTE)renderDelegations();else if(r===INVITE_ROUTE)renderInvitation();}
+function addNav(){const nav=document.querySelector(".nav");if(!nav)return;for(const [id,title,href] of [["valexInfluencerNav","ESPACE PARTENAIRE",PARTNER_ROUTE],["valexDelegationsNav","ACCÈS DÉLÉGUÉS",DELEGATIONS_ROUTE]])if(!document.getElementById(id)){const a=el("a",title,"item");a.id=id;a.href=href;(nav.querySelector(".nav__foot")||nav).appendChild(a);}}
+async function mount(){addNav();const r=route();if(r===PARTNER_ROUTE)await refreshPartner();else if(r===DELEGATIONS_ROUTE)await refreshDelegations();else if(r===INVITE_ROUTE){if(state.token)await verifyInvitation();else renderInvitation();}}
+window.addEventListener("hashchange",()=>{const r=route();if(r===PARTNER_ROUTE)refreshPartner();else if(r===DELEGATIONS_ROUTE)refreshDelegations();else if(r===INVITE_ROUTE){if(state.token)verifyInvitation();else renderInvitation();}});
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
