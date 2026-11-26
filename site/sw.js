@@ -1,9 +1,116 @@
-// VAlex - service worker des notifications push.
+// VAlex - service worker PWA.
 //
-// Il affiche uniquement la charge utile recue du serveur. Aucun cache, aucune
-// donnee d'authentification, aucune reponse inventee. Une notification dont
-// l'URL sort du site retombe sur l'accueil.
+// Deux responsabilites distinctes :
+//   1. cache offline du shell et des assets statiques uniquement ;
+//   2. affichage des notifications push recues du serveur.
+//
+// Aucune reponse utilisateur (auth, REST, profil, commande, paiement, wallet,
+// message, notification privee, KYC) n'entre dans le cache. Aucun contenu de
+// notification n'est invente : sans charge utile, un texte neutre s'affiche.
 
+const CACHE = "valex-static-v1";
+const OFFLINE_SHELL = "/";
+
+const PRECACHE = [
+  "/",
+  "/manifest.json",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/favicon-32.png",
+  "/ads-core.mjs",
+  "/ads.js",
+  "/pwa.js",
+  "/push-core.mjs",
+  "/push.js",
+];
+
+const STATIC_EXT = /\.(?:js|mjs|css|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|otf|json)$/i;
+
+self.addEventListener("install", (event) => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await Promise.allSettled(
+      PRECACHE.map((path) => cache.add(new Request(path, { cache: "reload" }))),
+    );
+    await self.skipWaiting();
+  })());
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((key) => key.startsWith("valex-") && key !== CACHE)
+        .map((key) => caches.delete(key)),
+    );
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch (_) {
+    return;
+  }
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname === "/sw.js") return;
+
+  // Navigation : reseau d'abord, shell en cache seulement hors ligne.
+  if (request.mode === "navigate") {
+    event.respondWith((async () => {
+      try {
+        return await fetch(request);
+      } catch (_) {
+        const cache = await caches.open(CACHE);
+        const shell = await cache.match(OFFLINE_SHELL);
+        if (shell) return shell;
+        return new Response("Hors ligne", {
+          status: 503,
+          headers: { "content-type": "text/plain; charset=utf-8" },
+        });
+      }
+    })());
+    return;
+  }
+
+  // Assets statiques : cache d'abord, mise a jour en arriere-plan.
+  if (!STATIC_EXT.test(url.pathname)) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const hit = await cache.match(request);
+    const network = fetch(request)
+      .then((response) => {
+        const control = response.headers.get("cache-control") || "";
+        if (
+          response.ok &&
+          response.type === "basic" &&
+          !/no-store|private/i.test(control)
+        ) {
+          cache.put(request, response.clone());
+        }
+        return response;
+      })
+      .catch(() => null);
+    event.waitUntil(network.catch(() => {}));
+    if (hit) return hit;
+    const response = await network;
+    return response || new Response("", { status: 504 });
+  })());
+});
+
+// --- Notifications push ------------------------------------------------
 const FALLBACK_TITLE = "VAlex Boutique";
 const FALLBACK_BODY = "Nouvelle notification.";
 const MAX_TITLE = 120;

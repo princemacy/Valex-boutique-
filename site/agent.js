@@ -184,7 +184,7 @@ function setPanel(open) {
       state.greeted = true;
       if (!state.messages.length) {
         addMessage("assistant",
-          "Bonjou. Bonjour. Je suis l'assistant VAlex. Je réponds sur les commandes, la livraison, le paiement, le parrainage et la gratuité des boutiques. Je ne peux pas modifier un compte, un solde, un paiement ou un remboursement. Écrivez « Parler à un humain » ou « Pale ak yon moun » pour un agent.",
+          "Bonjour. Je suis l'assistant VAlex. Je réponds sur les commandes, la livraison, le paiement, le parrainage et la gratuité des boutiques. Je ne peux pas modifier un compte, un solde, un paiement ou un remboursement. Écrivez « Parler à un humain » ou « Pale ak yon moun » pour un agent.",
           { canned: true });
       }
     }

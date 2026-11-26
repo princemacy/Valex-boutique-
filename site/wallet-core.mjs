@@ -23,7 +23,7 @@ export function formatCents(cents) {
   if (value === null || value < 0) return "—";
   const units = Math.floor(value / 100);
   const rest = String(value % 100).padStart(2, "0");
-  return `${units.toLocaleString("fr-FR")},${rest} HTG`;
+  return `${units.toLocaleString("fr-FR")},${rest} GDS`;
 }
 
 export function normalizeWallet(value) {

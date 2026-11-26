@@ -81,7 +81,7 @@ export function formatCents(value) {
   const body =
     new Intl.NumberFormat("fr-FR").format(units) +
     (rest ? "," + String(rest).padStart(2, "0") : "");
-  return (n < 0 ? "-" : "") + body + " HTG";
+  return (n < 0 ? "-" : "") + body + " GDS";
 }
 
 export function normalizeIntent(row) {

@@ -10,7 +10,6 @@ import {
   buildPurchaseParams,
   formatCents,
   newIdempotencyKey,
-  remainingLabel,
   validateCampaignInput,
 } from "./ads-core.mjs";
 
@@ -48,7 +47,7 @@ export function resolveImages(display) {
       return null;
     }
   };
-  for (const ad of display.slots) ad.imageUrl = forPath(ad.imagePath);
+  for (const ad of display.paid) ad.imageUrl = forPath(ad.imagePath);
   return display;
 }
 
@@ -57,10 +56,6 @@ function node(doc, tag, className, text) {
   if (className) element.className = className;
   if (text != null) element.textContent = text;
   return element;
-}
-
-function badge(doc, text, className) {
-  return node(doc, "span", `adbadge ${className || ""}`.trim(), text);
 }
 
 function adCard(doc, ad) {
@@ -72,19 +67,6 @@ function adCard(doc, ad) {
   }
   card.setAttribute("data-slot", String(ad.slotNo));
 
-  const head = node(doc, "span", "adcard__head");
-  if (ad.kind === "valex") {
-    head.appendChild(badge(doc, "VAlex", "adbadge--valex"));
-  } else {
-    head.appendChild(badge(
-      doc,
-      ad.tier === "premium" ? "Premium" : "Sponsorise",
-      ad.tier === "premium" ? "adbadge--premium" : "adbadge--standard",
-    ));
-    const left = remainingLabel(ad.remainingSeconds);
-    if (left) head.appendChild(node(doc, "span", "adcard__left", left));
-  }
-  card.appendChild(head);
   if (ad.imageUrl) {
     const image = doc.createElement("img");
     image.className = "adcard__img";
@@ -94,40 +76,24 @@ function adCard(doc, ad) {
     card.appendChild(image);
   }
   card.appendChild(node(doc, "strong", "adcard__title", ad.title));
-  card.appendChild(node(
-    doc,
-    "span",
-    "adcard__note",
-    ad.kind === "valex" ? "Annonce de la maison" : "Publicite payante",
-  ));
+  // Seule attribution autorisee : le nom reel de la boutique.
+  card.appendChild(node(doc, "span", "adcard__note", "de " + ad.shopName));
   return card;
 }
 
 export function render(display, host, doc = document) {
   host.replaceChildren();
-  if (!display || (!display.valex.length && !display.paid.length)) {
+  if (!display || !display.paid || !display.paid.length) {
     host.hidden = true;
     return host;
   }
   host.hidden = false;
 
   const section = node(doc, "section", "adzone");
-  section.setAttribute("aria-label", "Publicites");
-
-  const head = node(doc, "div", "adzone__head");
-  head.appendChild(node(doc, "span", null, "Publicite"));
-  section.appendChild(head);
-
-  if (display.valex.length) {
-    const row = node(doc, "div", "adrow adrow--valex");
-    for (const ad of display.valex) row.appendChild(adCard(doc, ad));
-    section.appendChild(row);
-  }
-  if (display.paid.length) {
-    const row = node(doc, "div", "adrow adrow--paid");
-    for (const ad of display.paid) row.appendChild(adCard(doc, ad));
-    section.appendChild(row);
-  }
+  section.setAttribute("aria-label", "Annonces des boutiques");
+  const row = node(doc, "div", "adrow adrow--paid");
+  for (const ad of display.paid) row.appendChild(adCard(doc, ad));
+  section.appendChild(row);
 
   host.appendChild(section);
   return host;

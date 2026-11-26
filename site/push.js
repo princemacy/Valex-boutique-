@@ -8,8 +8,8 @@
 // La cle VAPID publique est lue dans `app_settings` (lecture publique). La
 // cle privee reste exclusivement dans les secrets du serveur d'envoi.
 
+import { getRegistration as pwaRegistration } from "./pwa.js";
 import {
-  PUSH_WORKER_URL,
   isValidPushKind,
   maskEndpoint,
   normalizeVapidKey,
@@ -63,9 +63,11 @@ async function workerRegistration() {
   if (!browserSupported()) {
     throw new PushError("non_supporte", "Ce navigateur ne gere pas les notifications.");
   }
-  const registration = await navigator.serviceWorker.register(PUSH_WORKER_URL, {
-    scope: "/",
-  });
+  // Une seule inscription pour tout le site : pwa.js s'en charge.
+  const registration = await pwaRegistration();
+  if (!registration) {
+    throw new PushError("non_supporte", "Le service worker n'est pas disponible.");
+  }
   await navigator.serviceWorker.ready;
   return registration;
 }
@@ -234,9 +236,10 @@ const api = { state, enable, disable, list, preferences, setPreference, PushErro
 if (typeof window !== "undefined") {
   window.VAlexPush = api;
   // L'enregistrement du service worker rend aussi la PWA installable. Il ne
-  // demande aucune permission et n'abonne personne.
+  // demande aucune permission et n'abonne personne. pwa.js est la seule
+  // source d'inscription.
   if (browserSupported() && window.isSecureContext === true) {
-    navigator.serviceWorker.register(PUSH_WORKER_URL, { scope: "/" }).catch(() => {});
+    pwaRegistration().catch(() => {});
   }
 }
 

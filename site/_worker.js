@@ -3,7 +3,7 @@
 // Aucune clé secrète ici : seulement la clé publique (publishable), déjà présente dans le site.
 const SB = "https://amigpgmtbyfobbcjlave.supabase.co";
 const KEY = "sb_publishable_OVLKYU3-9c-t_3UwY92UzQ_kxd1Z63Q";
-const CSP = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'sha256-UKNOTeCxk+gTRzfN5cDeYpeznVrMSoOtN0ydzwJxehk=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://amigpgmtbyfobbcjlave.supabase.co; connect-src 'self' https://amigpgmtbyfobbcjlave.supabase.co wss://amigpgmtbyfobbcjlave.supabase.co https://api.upcitemdb.com https://world.openfoodfacts.org https://world.openbeautyfacts.org https://world.openproductsfacts.org https://nominatim.openstreetmap.org https://overpass-api.de; media-src 'self' blob: https://amigpgmtbyfobbcjlave.supabase.co; worker-src 'self' blob:; manifest-src 'self'; frame-src 'none'; upgrade-insecure-requests";
+const CSP = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'sha256-ghFeVqROUC/LDW/PNOJ0zUdFp8syJpz0k8zDBC2nnP4=' https://cdn.jsdelivr.net https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://amigpgmtbyfobbcjlave.supabase.co; connect-src 'self' https://accounts.google.com https://amigpgmtbyfobbcjlave.supabase.co wss://amigpgmtbyfobbcjlave.supabase.co https://api.upcitemdb.com https://world.openfoodfacts.org https://world.openbeautyfacts.org https://world.openproductsfacts.org https://nominatim.openstreetmap.org https://overpass-api.de; media-src 'self' blob: https://amigpgmtbyfobbcjlave.supabase.co; worker-src 'self' blob:; manifest-src 'self'; frame-src https://accounts.google.com; upgrade-insecure-requests";
 const SEC = {
   "content-security-policy": CSP,
   "strict-transport-security": "max-age=31536000; includeSubDomains",
@@ -14,10 +14,23 @@ const SEC = {
 };
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const img = (bucket, p) => !p ? null : /^https?:/.test(p) ? p : `${SB}/storage/v1/object/public/${bucket}/${p}`;
-const htg = (c) => Math.round((c || 0) / 100).toLocaleString("fr-FR") + " HTG";
+// Les prix sont stockes en centimes. L'affichage public est en GDS, la monnaie
+// decidee par le proprietaire. Les valeurs stockees ne sont jamais converties.
+const gds = (c) => Math.round((c || 0) / 100).toLocaleString("fr-FR") + " GDS";
 async function rest(path) {
   const r = await fetch(`${SB}/rest/v1/${path}`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, cf: { cacheTtl: 300, cacheEverything: true } });
-  return r.ok ? r.json() : [];
+  if (!r.ok) throw new Error("supabase_" + r.status);
+  return r.json();
+}
+// Une lecture en erreur ne doit jamais etre confondue avec une absence de
+// resultat : la premiere garde la page client, la seconde rend une vraie 404.
+async function restOne(path) {
+  try {
+    const rows = await rest(path);
+    return { ok: true, item: Array.isArray(rows) ? rows[0] : null };
+  } catch (_) {
+    return { ok: false, item: null };
+  }
 }
 function secure(res) {
   const h = new Headers(res.headers);
@@ -104,7 +117,7 @@ a.btn:hover{background:#E85F00}a.second{background:#FFF;color:var(--ink);border:
 <a class="mark" href="/" aria-label="VAlex Boutique, accueil"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect width="64" height="64" fill="#FFF"/><path d="M9 11h12.4L32 42.2 42.6 11H55L37.8 55H26.2z" fill="#111"/><rect x="9" y="57" width="46" height="4" fill="#FF6A00"/></svg><b>VAlex Boutique</b></a>
 <p class="code">ERREUR ${known}</p><h1>${txt(title)}.</h1><p class="lede">${txt(lede)}</p>
 <div class="actions"><a class="btn" href="/">Retour à l'accueil</a><a class="btn second" href="/#/assistance">Contacter l'assistance</a></div>
-<p class="foot">VAlex Boutique, Haïti</p></body></html>`, { status: known, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" } });
+<p class="foot">VAlex Boutique, Haïti</p></body></html>`, { status: known, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex, nofollow" } });
 }
 export default {
   async fetch(req, env) {
@@ -112,39 +125,47 @@ export default {
     const page = () => env.ASSETS.fetch(new Request(new URL("/", u), req));
     let m;
     if ((m = u.pathname.match(/^\/p\/([0-9a-f-]{36})\/?$/))) {
-      const [p] = await rest(`catalog_products?id=eq.${m[1]}&is_demo=eq.false&select=id,title,description,min_price_cents,cover_path,shop_name,shop_slug,shop_city,total_stock,category_label`);
-      if (!p) return secure(await homeMeta(await page(), u.origin));
+      const found = await restOne(`catalog_products?id=eq.${m[1]}&is_demo=eq.false&select=id,title,description,min_price_cents,cover_path,shop_name,shop_slug,shop_city,total_stock,category_label`);
+      if (!found.ok) return secure(await homeMeta(await page(), u.origin));
+      const p = found.item;
+      if (!p) return secure(errorPage(404, u.origin));
       const image = img("product-images", p.cover_path), url = `${u.origin}/p/${p.id}`;
-      const desc = `${htg(p.min_price_cents)} · ${p.shop_name}${p.shop_city ? " à " + p.shop_city : ""}. ${(p.description || "").slice(0, 140)}`;
+      const desc = `${gds(p.min_price_cents)} · ${p.shop_name}${p.shop_city ? " à " + p.shop_city : ""}. ${(p.description || "").slice(0, 140)}`;
       const jsonld = { "@context": "https://schema.org", "@type": "Product", name: p.title, description: p.description || p.title, image: image ? [image] : undefined, category: p.category_label,
         brand: { "@type": "Brand", name: p.shop_name },
         offers: { "@type": "Offer", url, priceCurrency: "HTG", price: Math.round((p.min_price_cents || 0) / 100), availability: (p.total_stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", seller: { "@type": "Organization", name: p.shop_name } } };
-      const out = secure(inject(await page(), { title: `${p.title} — ${htg(p.min_price_cents)} | VAlex`, desc, image, url, jsonld, hash: `#/produit/${p.id}`,
-        body: `<h1>${esc(p.title)}</h1><p><b>${htg(p.min_price_cents)}</b> — ${esc(p.shop_name)}, ${esc(p.shop_city || "")}</p>${image ? `<img src="${esc(image)}" alt="${esc(p.title)}" width="320">` : ""}<p>${esc(p.description || "")}</p><p><a href="/b/${esc(p.shop_slug)}">Voir la boutique ${esc(p.shop_name)}</a></p>` }));
+      const out = secure(inject(await page(), { title: `${p.title} — ${gds(p.min_price_cents)} | VAlex`, desc, image, url, jsonld, hash: `#/produit/${p.id}`,
+        body: `<h1>${esc(p.title)}</h1><p><b>${gds(p.min_price_cents)}</b> — ${esc(p.shop_name)}, ${esc(p.shop_city || "")}</p>${image ? `<img src="${esc(image)}" alt="${esc(p.title)}" width="320">` : ""}<p>${esc(p.description || "")}</p><p><a href="/b/${esc(p.shop_slug)}">Voir la boutique ${esc(p.shop_name)}</a></p>` }));
       out.headers.set("cache-control", "public, max-age=300");
       return out;
     }
     if ((m = u.pathname.match(/^\/b\/([a-z0-9-]{2,60})\/?$/))) {
-      const [s] = await rest(`shops?slug=eq.${m[1]}&is_demo=eq.false&select=id,name,slug,activity,city,department,logo_url`);
-      if (!s) return secure(await homeMeta(await page(), u.origin));
+      const found = await restOne(`shops?slug=eq.${m[1]}&is_demo=eq.false&select=id,name,slug,activity,city,department,logo_url`);
+      if (!found.ok) return secure(await homeMeta(await page(), u.origin));
+      const s = found.item;
+      if (!s) return secure(errorPage(404, u.origin));
       const prods = await rest(`catalog_products?shop_id=eq.${s.id}&is_demo=eq.false&select=id,title,min_price_cents&order=published_at.desc&limit=30`);
       const url = `${u.origin}/b/${s.slug}`, image = img("shop-logos", s.logo_url);
       const out = secure(inject(await page(), { title: `${s.name} — boutique à ${s.city || "Haïti"} | VAlex`, desc: `${s.activity || "Boutique"} · ${prods.length} articles · ${s.city || ""} ${s.department || ""}. Commandez sur VAlex, paiement à la livraison possible.`,
         image, url, hash: `#/boutique/${s.slug}`,
         jsonld: { "@context": "https://schema.org", "@type": "Store", name: s.name, url, image, address: { "@type": "PostalAddress", addressLocality: s.city, addressRegion: s.department, addressCountry: "HT" } },
-        body: `<h1>${esc(s.name)}</h1><p>${esc(s.activity || "")}</p><ul>${prods.map((p) => `<li><a href="/p/${p.id}">${esc(p.title)}</a> — ${htg(p.min_price_cents)}</li>`).join("")}</ul>` }));
+        body: `<h1>${esc(s.name)}</h1><p>${esc(s.activity || "")}</p><ul>${prods.map((p) => `<li><a href="/p/${p.id}">${esc(p.title)}</a> — ${gds(p.min_price_cents)}</li>`).join("")}</ul>` }));
       out.headers.set("cache-control", "public, max-age=300");
       return out;
     }
+    if (u.pathname === "/a-propos.html" || u.pathname === "/faq.html" || u.pathname === "/a-propos/" || u.pathname === "/faq/" || u.pathname === "/404.html") {
+      const clean = u.pathname === "/404.html" ? "/404" : u.pathname.startsWith("/a-propos") ? "/a-propos" : "/faq";
+      return secure(Response.redirect(`${u.origin}${clean}`, 301));
+    }
     if (u.pathname === "/a-propos" || u.pathname === "/faq") {
-      const file = u.pathname === "/a-propos" ? "/a-propos.html" : "/faq.html";
-      const out = secure(publicPageMeta(await env.ASSETS.fetch(new Request(new URL(file, u), req)), u.origin, u.pathname));
+      // L'asset est stocke en .html, mais Cloudflare redirige .html vers
+      // l'adresse propre. On demande donc directement l'adresse propre a
+      // ASSETS : sinon le Worker renvoie sa propre redirection en boucle.
+      const out = secure(publicPageMeta(await env.ASSETS.fetch(new Request(new URL(u.pathname, u), req)), u.origin, u.pathname));
       out.headers.set("cache-control", "public, max-age=3600");
       return out;
     }
-    if (u.pathname === "/a-propos/" || u.pathname === "/a-propos.html" || u.pathname === "/faq/" || u.pathname === "/faq.html") {
-      return secure(Response.redirect(`${u.origin}${u.pathname.startsWith("/a-propos") ? "/a-propos" : "/faq"}`, 301));
-    }
+    if (u.pathname === "/404") return secure(errorPage(404, u.origin));
     if (u.pathname === "/llms.txt") {
       const asset = await env.ASSETS.fetch(new Request(new URL("/llms.txt", u), req));
       const h = new Headers(asset.headers);
@@ -153,7 +174,10 @@ export default {
       return secure(new Response(asset.body, { status: asset.status, headers: h }));
     }
     if (u.pathname === "/sitemap.xml") {
-      const [prods, shops] = await Promise.all([rest("catalog_products?is_demo=eq.false&select=id,published_at&limit=5000"), rest("shops?is_demo=eq.false&select=slug,created_at&limit=2000")]);
+      let prods = [], shops = [];
+      try {
+        [prods, shops] = await Promise.all([rest("catalog_products?is_demo=eq.false&select=id,published_at&limit=5000"), rest("shops?is_demo=eq.false&select=slug,created_at&limit=2000")]);
+      } catch (_) { /* un catalogue indisponible ne doit pas casser le plan de site */ }
       const x = [`<url><loc>${esc(u.origin)}/</loc></url>`, `<url><loc>${esc(u.origin)}/a-propos</loc></url>`, `<url><loc>${esc(u.origin)}/faq</loc></url>`, ...shops.map((s) => `<url><loc>${esc(u.origin)}/b/${esc(s.slug)}</loc></url>`), ...prods.map((p) => `<url><loc>${esc(u.origin)}/p/${esc(p.id)}</loc>${p.published_at ? `<lastmod>${esc(String(p.published_at).slice(0, 10))}</lastmod>` : ""}</url>`)];
       return secure(new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${x.join("")}</urlset>`, { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=3600" } }));
     }
