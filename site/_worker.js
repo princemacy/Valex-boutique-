@@ -12,6 +12,9 @@ const SEC = {
   "referrer-policy": "strict-origin-when-cross-origin",
   "permissions-policy": "camera=(), microphone=(self), geolocation=(), payment=(), usb=()",
 };
+// Programme partenaire : ressources de même origine servies comme fichiers statiques (Static Assets).
+// Le module est différé et couvert par script-src 'self' : la CSP ne change pas.
+const PARTNER_ASSETS = `<link rel="stylesheet" href="/influencer.css"><script type="module" src="/influencer-ui.js"></script>`;
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const img = (bucket, p) => !p ? null : /^https?:/.test(p) ? p : `${SB}/storage/v1/object/public/${bucket}/${p}`;
 // Les prix sont stockes en centimes. L'affichage public est en GDS, la monnaie
@@ -44,7 +47,7 @@ function inject(res, { title, desc, image, url, jsonld, body, hash }) {
 <meta property="og:type" content="product"><meta property="og:site_name" content="VAlex Boutique"><meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">${image ? `<meta property="og:image" content="${esc(image)}"><meta name="twitter:card" content="summary_large_image">` : ""}
 <script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>
-<script src="/r.js" data-hash="${esc(hash)}"></script>`;
+<script src="/r.js" data-hash="${esc(hash)}"></script>${PARTNER_ASSETS}`;
   return new HTMLRewriter()
     .on("title", { element(e) { e.remove(); } })
     .on('meta[property^="og:"]', { element(e) { e.remove(); } })
@@ -57,7 +60,7 @@ function inject(res, { title, desc, image, url, jsonld, body, hash }) {
 }
 function homeMeta(res, origin) {
   const base = esc(String(origin || "").replace(/\/+$/, ""));
-  const head = `<link rel="canonical" href="${base}/"><meta property="og:url" content="${base}/"><meta property="og:image" content="${base}/og-image.png"><meta name="twitter:image" content="${base}/og-image.png">`;
+  const head = `<link rel="canonical" href="${base}/"><meta property="og:url" content="${base}/"><meta property="og:image" content="${base}/og-image.png"><meta name="twitter:image" content="${base}/og-image.png">${PARTNER_ASSETS}`;
   return new HTMLRewriter()
     .on('link[rel="canonical"]', { element(e) { e.remove(); } })
     .on('meta[property="og:url"]', { element(e) { e.remove(); } })
